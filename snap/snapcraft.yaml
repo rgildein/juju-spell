@@ -1,0 +1,29 @@
+name: multijuju
+base: core22
+adopt-info: multijuju
+# version: "0.1"
+summary: collects an operates at several clouds at the same time
+description: |
+  Connects to multiple clouds and allows to run commands at the same time.
+
+grade: devel
+confinement: devmode
+
+apps:
+  multijuju:
+    command: bin/multijuju
+    plugs: [network, network-control, ssh-keys]
+    environment:
+        MULTIJUJUDIR: $SNAP_DATA/
+
+parts:
+  multijuju:
+    plugin: python
+    python-requirements: [./requirements.txt]
+    source: .
+    stage-packages:
+      - git
+    override-build: |
+        snapcraftctl build
+        echo "Version: $(python3 setup.py --version)"
+        snapcraftctl set-version "$(python3 setup.py --version)"

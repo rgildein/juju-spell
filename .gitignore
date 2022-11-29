@@ -1,0 +1,11 @@
+dist/
+build/
+cloudstats.egg-info/
+*.pyc
+*.snap
+__pycache__/
+.coverage
+.tox/
+report/
+config.yaml
+.history/**
