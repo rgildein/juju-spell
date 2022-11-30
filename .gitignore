@@ -1,6 +1,6 @@
 dist/
 build/
-cloudstats.egg-info/
+multijuju.egg-info/
 *.pyc
 *.snap
 __pycache__/
