@@ -32,16 +32,12 @@ class RemoveFileCommand(BaseCommand):
 
     def fill_parser(self, parser):
         """Add own parameters to the general parser."""
-        parser.add_argument(
-            "filepath", type=pathlib.Path, help="The file to be removed"
-        )
+        parser.add_argument("filepath", type=pathlib.Path, help="The file to be removed")
 
     def run(self, parsed_args):
         """Run the command."""
         if not parsed_args.filepath.exists() or parsed_args.filepath.is_dir():
-            raise ArgumentParsingError(
-                "The indicated path is not a file or does not exist."
-            )
+            raise ArgumentParsingError("The indicated path is not a file or does not exist.")
         try:
             parsed_args.filepath.unlink()
         except Exception as exc:
