@@ -1,6 +1,8 @@
+from .commands.cmd import exec_cmd
+
+
 def main():
-    # TODO document why this method is empty
-    pass
+    exec_cmd()
 
 
 if __name__ == "__main__":
