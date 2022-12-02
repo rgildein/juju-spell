@@ -19,10 +19,9 @@ import argparse
 import asyncio
 import textwrap
 
-from craft_cli import emit
-
 from multijuju.cli.base_cli import BaseCLICommand
 from multijuju.commands.juju_status_command import JujuStatusCommand
+from multijuju.filter import Filter
 
 
 class JujuStatusCLI(BaseCLICommand):
@@ -62,11 +61,4 @@ class JujuStatusCLI(BaseCLICommand):
 
         juju_status_command = JujuStatusCommand()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(juju_status_command.run(["overlord"]))
-        emit.message(message)
-
-
-async def async_func(command):
-    print("heelo")
-    await command
-    print("heelo333")
+        return loop.run_until_complete(juju_status_command.run(Filter.filtered_clouds))

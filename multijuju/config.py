@@ -5,7 +5,7 @@ config = None
 
 
 class Config:
-    """Configuration for cloudstats."""
+    """Configuration for multijuju."""
 
     def __init__(self, args=None):
         """Initialize the config class."""

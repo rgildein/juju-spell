@@ -18,6 +18,6 @@
 
 import sys
 
-from multijuju import main
+from multijuju import cmd
 
-sys.exit(main.run())
+sys.exit(cmd.exec_cmd())
