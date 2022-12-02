@@ -48,6 +48,7 @@ class JujuActionsCLI(BaseCLICommand):
     def execute(self, parsed_args):
         message = ""
         if parsed_args.application:
-            message += f"${parsed_args.application} actions are restart, represent, click \n"
-
+            message += (
+                f"${parsed_args.application} actions are restart, represent, click \n"
+            )
         emit.message(message)
