@@ -14,6 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import this library to connect to multiple Juju environments."""
+"""multijuju base cli command."""
+from craft_cli import BaseCommand, emit
 
-__version__ = "0.0.1"
+
+class BaseCLICommand(BaseCommand):
+    """base cli command for handling contexts."""
+
+    def run(self, parsed_args):
+        self.before(parsed_args)
+        self.execute(parsed_args)
+        self.after(parsed_args)
+
+    def execute(self, parsed_args):
+        pass
+
+    def before(self, parsed_args):
+        emit.message("-----------------------------------------------------")
+
+    def after(self, parsed_args):
+        emit.message("-----------------------------------------------------")

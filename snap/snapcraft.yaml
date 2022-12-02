@@ -12,18 +12,18 @@ confinement: devmode
 apps:
   multijuju:
     command: bin/multijuju
-    plugs: [network, network-control, ssh-keys]
+    plugs: [ network, network-control, ssh-keys ]
     environment:
-        MULTIJUJUDIR: $SNAP_DATA/
+      MULTIJUJUDIR: $SNAP_DATA/
 
 parts:
   multijuju:
     plugin: python
-    python-requirements: [./requirements.txt]
+    python-requirements: [ ./requirements.txt ]
     source: .
     stage-packages:
       - git
     override-build: |
-        snapcraftctl build
-        echo "Version: $(python3 setup.py --version)"
-        snapcraftctl set-version "$(python3 setup.py --version)"
+      snapcraftctl build
+      echo "Version: $(python3 setup.py --version)"
+      snapcraftctl set-version "$(python3 setup.py --version)"

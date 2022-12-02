@@ -9,3 +9,4 @@ __pycache__/
 report/
 config.yaml
 .history/**
+.idea

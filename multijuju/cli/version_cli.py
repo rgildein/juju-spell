@@ -14,6 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import this library to connect to multiple Juju environments."""
+"""multijuju version command."""
+import argparse
+import textwrap
 
-__version__ = "0.0.1"
+from craft_cli import BaseCommand, emit
+
+
+class VersionCLI(BaseCommand):
+    """multijuju version command."""
+
+    name = "version"
+    help_msg = "Gets the status of selected model"
+    overview = textwrap.dedent(
+        """
+    The status command shows the version of multijuju.
+
+    Example:
+    """
+    )
+
+    def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
+        pass
+
+    def run(self, parsed_args):
+        emit.message("0.0.1")

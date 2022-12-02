@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import this library to connect to multiple Juju environments."""
+"""Multijuju cli commands."""
 
-__version__ = "0.0.1"
+from .juju_actions_cli import JujuActionsCLI
+from .juju_status_cli import JujuStatusCLI
+from .version_cli import VersionCLI
+
+__all__ = ["JujuActionsCLI", "JujuStatusCLI", "VersionCLI"]

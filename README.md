@@ -1,13 +1,17 @@
-# Juju Machine Exporter
+# Multijuju
 
-multijuju snap collects machines' running status in all models under a Juju controller. It also provides an interface to expose the metrics to Prometheus for storage and further usage.
+multijuju snap controls all clouds in a centralized way
 
 ## Deployment
+
 To get the latest stable version of the snap from Snapstore, run:
+
 ```bash
 sudo snap install multijuju
 ```
+
 To get the latest development version of the snap, build from the source code and install with `--dangerous` flag:
+
 ```bash
 make build
 sudo snap install --dangerous multijuju.snap
