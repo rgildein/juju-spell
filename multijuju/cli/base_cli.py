@@ -15,6 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """multijuju base cli command."""
+
+import json
+
 from craft_cli import BaseCommand, emit
 
 
@@ -23,8 +26,14 @@ class BaseCLICommand(BaseCommand):
 
     def run(self, parsed_args):
         self.before(parsed_args)
-        self.execute(parsed_args)
+        retval = self.execute(parsed_args)
+        return self.format_output(retval)
         self.after(parsed_args)
+
+    def format_output(self, retval):
+        """Pretty formatter for output."""
+        # TODO: pretty output, extract to own class
+        return emit.message(json.dumps(retval, default=vars, indent=1))
 
     def execute(self, parsed_args):
         pass

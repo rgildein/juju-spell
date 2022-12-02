@@ -14,30 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju version command."""
-import argparse
-import textwrap
 
-from craft_cli import BaseCommand, emit
+class Filter:
+    """Static class for filter."""
 
-from multijuju import settings
+    filtered_clouds: list
 
+    @staticmethod
+    def filter_clouds(filter_input: str) -> list:
+        """Filter the clouds according to filter rules.
 
-class VersionCLI(BaseCommand):
-    """multijuju version command."""
-
-    name = "version"
-    help_msg = "Gets the status of selected model"
-    overview = textwrap.dedent(
+        @param filter_input: input string from the --filter parameter
+        @return: list of clouds
         """
-    The status command shows the version of multijuju.
-
-    Example:
-    """
-    )
-
-    def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
-        pass
-
-    def run(self, parsed_args):
-        emit.message(settings.APP_VERSION)
+        Filter.filtered_clouds = filter_input.split(",")
+        return Filter.filtered_clouds

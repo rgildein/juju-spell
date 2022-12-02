@@ -27,7 +27,7 @@ class BaseJujuCommand(ABC):
         for cloud in filtered_list:
             controller = await self.open_connection(cloud)
             result = await self.execute(controller, **kwargs)
-            self.close_connection(controller)
+            await self.close_connection(controller)
             result_list.append(result)
         return result_list
 
@@ -41,5 +41,5 @@ class BaseJujuCommand(ABC):
         return controller
 
     async def close_connection(self, controller: Controller):
-        controller.disconnect()
+        await controller.disconnect()
         emit.message("closing connection")

@@ -13,12 +13,13 @@ def generate_juju_data(juju_data: Path) -> None:
 class ConnectManager:
     """Connect manager is used to define JUJU_DATA directory and associated connections."""
 
-    def __init__(self) -> None:
+    def __init__(self, clouds: list) -> None:
         """Initialize the ConnectManager."""
         self._juju_config = None  # TODO: add and use config argument
         self._uuid = uuid.uuid4()
         self._juju_data = None
         self._active = False
+        self._clouds = clouds
 
     def __enter__(self) -> "ConnectManager":
         """Enter ConnectManager."""

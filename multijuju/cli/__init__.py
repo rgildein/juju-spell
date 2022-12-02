@@ -18,6 +18,7 @@
 
 from .juju_actions_cli import JujuActionsCLI
 from .juju_status_cli import JujuStatusCLI
+from .show_controller import ShowControllerInformationCommand
 from .version_cli import VersionCLI
 
-__all__ = ["JujuActionsCLI", "JujuStatusCLI", "VersionCLI"]
+__all__ = ["JujuActionsCLI", "JujuStatusCLI", "VersionCLI", "ShowControllerInformationCommand"]
