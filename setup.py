@@ -1,6 +1,6 @@
 """Set up cloudstats python module cli scripts."""
 
-from setuptools import setup
+from setuptools import find_namespace_packages, setup
 
 with open("README.md") as f:
     readme = f.read()
@@ -17,11 +17,11 @@ setup(
     author="Canonical BootStack DevOps Centres",
     url="https://github.com/canonical/multijuju",
     license=license,
-    packages=["multijuju"],
+    packages=find_namespace_packages(),
     package_data={"multijuju": ["config_default.yaml"]},
     entry_points={
         "console_scripts": [
-            "multijuju=multijuju.cli:main",
+            "multijuju=multijuju.main:run",
         ]
     },
     # setup_requires=["setuptools_scm"],

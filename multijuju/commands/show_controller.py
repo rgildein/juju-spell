@@ -37,9 +37,7 @@ async def _exec(
     """
     # Select/filter here
     # connection manager here
-    emit.message(
-        "Start command {} on cloud {}".format("controller-info", "{cloud name}")
-    )
+    emit.message("Start command {} on cloud {}".format("controller-info", "{cloud name}"))
     await cmd_show_controller(
         controller_name="lxd-local",  # This need to be update later
     )

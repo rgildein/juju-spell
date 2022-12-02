@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import this library to connect to multiple Juju environments."""
+"""Main entry point."""
 
-__version__ = "0.0.1"
+import sys
+
+from multijuju import main
+
+sys.exit(main.run())
