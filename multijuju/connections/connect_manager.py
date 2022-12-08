@@ -1,69 +1,66 @@
-from typing import Dict
+from typing import Any, Dict
 
 from juju import juju
 
-from multijuju.config import Config
 
-
-class ConnectManager:
+class ConnectManager(object):
     """Connect manager is used to define connections for controllers.
 
     Usage example:
-    async def task(connect_manager, ...):
+    async def task(...):
         ...
-        async with connect_manager:
-           controller = await connect_manager.connect("<controller-name>")
-           ...
-
-
-    def main():
+        connect_manager = ConnectManager():
+        controller = await connect_manager.get_controller(controller_config)
         ...
-        config = ...
-        connect_manager = ConnectManger(config)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(task(conn, ...))
     """
 
-    def __init__(self, config: Config) -> None:
-        """Initialize the ConnectManager."""
-        self._config = config
-        self._connections = {}
+    _manager = None
+    _controllers = {}
 
-    async def __aenter__(self) -> "ConnectManager":
-        """Enter ConnectManager."""
-        return self
+    def __new__(cls):
+        if getattr(cls, "_manager") is None:
+            cls._manager = super(ConnectManager, cls).__new__(cls)
 
-    async def __aexit__(self, *args):
-        """Leave ConnectManager."""
-        await self.clean()
+        return cls._manager
 
     @property
-    def config(self) -> Config:
-        """Get config."""
-        return self._config
-
-    @property
-    def connections(self) -> Dict[str, juju.Controller]:
+    def controllers(self) -> Dict[str, juju.Controller]:
         """Return list of controllers ."""
-        return self._connections
+        return self._controllers
 
     async def clean(self):
         """Close all connections."""
-        for controller in self.connections.values():
+        for controller in self.controllers.values():
             await controller.disconnect()
 
-    async def connect(self, name: str, sshuttle: bool = False) -> juju.Controller:
-        """Prepare connection to Controller and return it."""
-        _ = self.config.get(name)
-        # TODO: preparation connection to remote controller (sshuttle, port-forwarding)
-        controller = juju.Controller()  # TODO: use JUJU_DATA or pass all information
-        await controller.connect(name)
+    async def get_controller(
+        self, config: Dict[str, Any()], sshuttle: bool = False, reconnect: bool = False
+    ) -> juju.Controller:
+        """Get controller."""
+        controller = self.controllers.get(config["name"])
+        if controller is None:
+            controller = await self.get_controller(config, sshuttle)
+        elif reconnect:
+            await controller.disconnect()
+            controller = await self.get_controller(config, sshuttle)
+
+        # TODO: add connection validation and reconnect if it's needed
         return controller
 
-    async def disconnect(self, name: str) -> None:
-        """Disconnect controller."""
-        controller = self.connections.get(name)
-        if controller is None:
-            raise KeyError(f"Connection to controllers {name} is not established.")
+    async def connect(self, config: Dict[str, Any()], sshuttle: bool = False) -> juju.Controller:
+        """Prepare connection to Controller and return it."""
+        controller = juju.Controller()
+        # TODO: preparation connection to remote controller (sshuttle, port-forwarding)
+        # TODO: add "localhost:<port>" to controllers api-endpoints
+        await controller.connect(
+            endpoint=config["api-endpoints"],
+            uuid=config["uuid"],
+            username=config["account"]["user"],
+            password=config["account"]["password"],
+            cacert=config["ca-cert"],
+        )
+        self.controllers[config["name"]] = controller
+        return controller
 
-        await controller.disconnect()
+
+get_controller = ConnectManager().get_controller
