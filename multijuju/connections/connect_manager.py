@@ -1,79 +1,69 @@
-import shutil
-import tempfile
-import uuid
-from pathlib import Path
+from typing import Dict
 
+from juju import juju
 
-def generate_juju_data(juju_data: Path) -> None:
-    """Generate JUJU_DATA directory."""
-    # TODO: create all yaml files
-    pass
+from multijuju.config import Config
 
 
 class ConnectManager:
-    """Connect manager is used to define JUJU_DATA directory and associated connections."""
+    """Connect manager is used to define connections for controllers.
 
-    def __init__(self, clouds: list) -> None:
+    Usage example:
+    async def task(connect_manager, ...):
+        ...
+        async with connect_manager:
+           controller = await connect_manager.connect("<controller-name>")
+           ...
+
+
+    def main():
+        ...
+        config = ...
+        connect_manager = ConnectManger(config)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(task(conn, ...))
+    """
+
+    def __init__(self, config: Config) -> None:
         """Initialize the ConnectManager."""
-        self._juju_config = None  # TODO: add and use config argument
-        self._uuid = uuid.uuid4()
-        self._juju_data = None
-        self._active = False
-        self._clouds = clouds
+        self._config = config
+        self._connections = {}
 
-    def __enter__(self) -> "ConnectManager":
+    async def __aenter__(self) -> "ConnectManager":
         """Enter ConnectManager."""
-        self.activate()
         return self
 
-    def __exit__(self, *args):
+    async def __aexit__(self, *args):
         """Leave ConnectManager."""
-        self.deactivate()
+        await self.clean()
 
     @property
-    def active(self) -> bool:
-        """Check if environment in active."""
-        return self._active
+    def config(self) -> Config:
+        """Get config."""
+        return self._config
 
     @property
-    def juju_data(self) -> Path:
-        """Get path to JUJU_DATA directory."""
-        if not self._juju_data:
-            tmpdir = tempfile.gettempdir()
-            self._juju_data = Path(tmpdir, str(self._uuid))
-            self._juju_data.mkdir()
+    def connections(self) -> Dict[str, juju.Controller]:
+        """Return list of controllers ."""
+        return self._connections
 
-        return self._juju_data
+    async def clean(self):
+        """Close all connections."""
+        for controller in self.connections.values():
+            await controller.disconnect()
 
-    @property
-    def uuid(self) -> uuid.UUID:
-        """Get UUID of connection."""
-        return self._uuid
+    async def connect(self, name: str, sshuttle: bool = False) -> juju.Controller:
+        """Prepare connection to Controller and return it."""
+        _ = self.config.get(name)
+        # TODO: preparation connection to remote controller (sshuttle, port-forwarding)
+        controller = juju.Controller()  # TODO: use JUJU_DATA or pass all information
+        await controller.connect(name)
+        return controller
 
-    def activate(self) -> "ConnectManager":
-        """Activate environment for Juju.
+    async def disconnect(self, name: str) -> None:
+        """Disconnect controller."""
+        controller = self.connections.get(name)
+        if controller is None:
+            raise KeyError(f"Connection to controllers {name} is not established.")
 
-        This function will define the JUJU_DATA environment with the clouds, controllers and accounts that Juju should
-        connect to. At the same to
-        - port-forward option: The port for the controller and specific units will be port-forwarded.
-                               # TODO: add examples here or in config structure
-        - sshuttle tunel option: Sshuttle can be created to redirect whole subnets.
-                                 # TODO: add examples here or in config structure
-        - JAAS option: use controllers registered with JAAS in JUJU_DATA generated phase
-                       # TODO: add examples here or in config structure
-        """
-        generate_juju_data(self.juju_data)
-        # TODO: set JUJU_DATA environment variable
-        # TODO: port-forward or sshuttle
-        self._active = True
-        return self
-
-    def deactivate(self):
-        """Deactivate environment for Juju.
-
-        Remove the JUJU_DATA environment and stop any port-forwarding or sshuttle tunel.
-        """
-        shutil.rmtree(self.juju_data)
-        # TODO: unset JUJU_DATA environment variable
-        # TODO: stop port-forwarding or sshuttle
-        self._active = False
+        await controller.disconnect()
