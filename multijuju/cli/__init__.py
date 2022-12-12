@@ -17,8 +17,8 @@
 """Multijuju cli commands."""
 
 from .juju_actions_cli import JujuActionsCLI
-from .juju_status_cli import JujuStatusCLI
-from .show_controller import ShowControllerInformationCommand
+from .juju_status import JujuStatusCMD
+from .show_controller import ShowControllerInformationCMD
 from .version_cli import VersionCLI
 
-__all__ = ["JujuActionsCLI", "JujuStatusCLI", "VersionCLI", "ShowControllerInformationCommand"]
+__all__ = ["JujuActionsCLI", "JujuStatusCMD", "VersionCLI", "ShowControllerInformationCMD"]

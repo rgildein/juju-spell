@@ -27,12 +27,13 @@ class BaseCLICommand(BaseCommand):
     def run(self, parsed_args):
         self.before(parsed_args)
         retval = self.execute(parsed_args)
-        return self.format_output(retval)
+        self.format_output(retval)
         self.after(parsed_args)
 
     def format_output(self, retval):
         """Pretty formatter for output."""
         # TODO: pretty output, extract to own class
+        # console output logic will be here yaml, json output will be central
         return emit.message(json.dumps(retval, default=vars, indent=1))
 
     def execute(self, parsed_args):

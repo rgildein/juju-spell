@@ -16,15 +16,17 @@
 
 """multijuju juju status command."""
 import argparse
-import asyncio
 import textwrap
 
-from multijuju.cli.base_cli import BaseCLICommand
+from multijuju.assignment.runner import run
+from multijuju.async_handler import run_async
+from multijuju.cli.base import BaseCLICommand
 from multijuju.commands.juju_status_command import JujuStatusCommand
-from multijuju.filter import Filter
+
+from .fill import add_assignment_argument, add_connection_manager_argument
 
 
-class JujuStatusCLI(BaseCLICommand):
+class JujuStatusCMD(BaseCLICommand):
     """multijuju juju status command."""
 
     name = "status"
@@ -39,6 +41,8 @@ class JujuStatusCLI(BaseCLICommand):
 
     def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
         """Add arguments specific to the export-login command."""
+        add_assignment_argument(parser)
+        add_connection_manager_argument(parser)
         parser.add_argument(
             "--relations",
             default=False,
@@ -52,13 +56,4 @@ class JujuStatusCLI(BaseCLICommand):
         )
 
     def execute(self, parsed_args):
-        message = "running juju status with "
-        if parsed_args.relations:
-            message += "relations option added \n"
-
-        if parsed_args.storage:
-            message += "storage option added \n"
-
-        juju_status_command = JujuStatusCommand()
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(juju_status_command.run(Filter.filtered_clouds))
+        run_async(run(JujuStatusCommand(), parsed_args))

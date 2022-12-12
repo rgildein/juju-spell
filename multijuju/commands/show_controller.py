@@ -1,19 +1,14 @@
-import pprint
+from juju.controller import Controller
 
-from craft_cli import emit
-from juju.client._definitions import ControllerAPIInfoResults
-
-from multijuju.commands.controller import connect_controller
+from multijuju.commands.base import BaseJujuCommand
 
 
-def controller_info_formatter(info: ControllerAPIInfoResults):
-    """Pretty formatter for controller information."""
-    # TODO: pretty output
-    return pprint.pformat(info.serialize())
+class ShowControllerCommand(BaseJujuCommand):
+    """Command to show a controller."""
 
+    async def execute(self, controller: Controller, **kwargs):
+        """Execute main code.
 
-async def cmd_show_controller(controller_name: str):
-    """Get information from juju controller."""
-    async with connect_controller(controller_name) as controller:
-        info = await controller.info()
-        emit.message(controller_info_formatter(info))
+        Changed name becaouse this has to override base_command.
+        """
+        return controller.info()
