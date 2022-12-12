@@ -1,28 +1,136 @@
 """Configuration loader."""
+import dataclasses
+import logging
+import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import confuse
+import yaml
+from confuse import RootView
 
-config = None
+logger = logging.getLogger(__name__)
+
+ENDPOINT_REGEX = (
+    r"^(?:http)s?://"  # http:// or https://
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    r"localhost|"  # localhost
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP
+    r"(?::\d+)?"  # Optional[port]
+    r"(?:/?|[/?]\S+)$"
+)
+API_ENDPOINT_REGEX = (
+    r"^(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    r"localhost|"  # localhost
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP
+    r"(:\d+)?$"  # port
+)
+UUID_REGEX = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+CA_CERT_REGEX = r"^(-*)BEGIN CERTIFICATE(-*)\n((.|\n)*)\n(-*)END CERTIFICATE(-*)$"
+SUBNET_REGEX = r"^([0-9]{1,3}\.){3}[0-9]{1,3}($|/(8|9|1[0-9]|2[0-9]|3[0-2]))$"
+DESTINATION_REGEX = (
+    r"^([A-Za-z]*@)?"  # Optional[user]
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    r"([A-Za-z0-9,_,-,.]*)|"  # destination
+    r"localhost|"  # localhost
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$"  # IP
+)
 
 
+class String(confuse.Template):
+    """A template used to validate string with regex and provide custom error."""
+
+    def __init__(self, pattern: str, message: str):
+        """Initialize the String object."""
+        super(String, self).__init__()
+        self._regex = re.compile(pattern)
+        self._message = message
+
+    def convert(self, value: Any, view: confuse.ConfigView) -> str:
+        """Check that the value is valid url."""
+        if isinstance(value, str) and re.match(self._regex, value) is not None:
+            return value
+
+        self.fail(self._message, view, True)
+
+
+MULTIJUJU_CONFIG_TEMPLATE = confuse.AttrDict(
+    {
+        "controllers": confuse.Sequence(
+            {
+                "name": str,
+                "customer": str,
+                "owner": str,
+                "description": confuse.Optional(str),
+                "tags": confuse.Optional(confuse.Sequence(str)),
+                "risk": confuse.Choice(range(1, 6), default=5),
+                "endpoint": String(API_ENDPOINT_REGEX, "Invalid api endpoint definition"),
+                "ca_cert": String(CA_CERT_REGEX, "Invalid ca-cert format"),
+                "username": str,
+                "password": str,
+                "model_mappings": confuse.AttrDict(
+                    {
+                        "lma": confuse.String(default="lma"),
+                        "default": confuse.String(default="production"),
+                    }
+                ),
+                "connection": confuse.Optional(
+                    confuse.AttrDict(
+                        {
+                            "subnets": confuse.Optional(
+                                confuse.Sequence(String(SUBNET_REGEX, "Invalid subnet definition"))
+                            ),
+                            "destination": String(DESTINATION_REGEX, "Invalid destination definition"),
+                            "jumps": confuse.Optional(
+                                confuse.Sequence(String(DESTINATION_REGEX, "Invalid jump definition"))
+                            ),
+                        }
+                    )
+                ),
+            }
+        ),
+    }
+)
+
+
+@dataclasses.dataclass
+class Connection:
+    destination: str
+    jumps: Optional[List[str]] = None
+    subnets: Optional[List[str]] = None
+
+
+@dataclasses.dataclass
+class Controller:
+    name: str
+    customer: str
+    owner: str
+    endpoint: str
+    ca_cert: str
+    username: str
+    password: str
+    model_mapping: Dict[str, str]
+    # optional attributes and attributes with default value
+    description: Optional[str] = None
+    tags: Optional[List[str]] = None
+    risk: int = 5
+    connection: Optional[Connection] = None
+
+
+@dataclasses.dataclass
 class Config:
-    """Configuration for multijuju."""
+    controllers: List[Controller]
 
-    def __init__(self, args=None):
-        """Initialize the config class."""
-        global config
 
-        if config:
-            self.config = config
-        else:
-            self.config = confuse.Configuration("multijuju", __name__)
-            config = self.config
+def load_config(path: Path) -> Config:
+    """Load ad validate yaml config file."""
+    with open(path, "r") as file:
+        source = yaml.safe_load(file)
+        logger.info("load config file from %s path", path)
 
-        if args:
-            self.config.set_args(args, dots=True)
-
-    def get_config(self, section=None):
-        """Return the config."""
-        if section:
-            return self.config[section]
-
-        return self.config
+    # use confuse library only for validation
+    _config = RootView([source])
+    valid_config = _config.get(MULTIJUJU_CONFIG_TEMPLATE)  # TODO: catch exception here
+    logger.debug("config was validated")
+    config = Config(**valid_config)
+    return config
