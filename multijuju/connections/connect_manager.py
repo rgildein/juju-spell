@@ -1,79 +1,126 @@
-import shutil
-import tempfile
-import uuid
-from pathlib import Path
+import dataclasses
+import socket
+import subprocess
+from typing import Any, Dict, List, Optional
+
+from juju import juju
 
 
-def generate_juju_data(juju_data: Path) -> None:
-    """Generate JUJU_DATA directory."""
-    # TODO: create all yaml files
-    pass
+def get_free_tcp_port() -> int:
+    """Get free TCP port."""
+    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp.bind(("", 0))
+    _, port = tcp.getsockname()
+    tcp.close()
+    return port
 
 
-class ConnectManager:
-    """Connect manager is used to define JUJU_DATA directory and associated connections."""
+def ssh_port_forwarding_proc(
+    local_target: str, remote_target: str, destination: str, jumps: Optional[List[str]] = None
+) -> subprocess.Popen:
+    """Port forward target through destination."""
+    jumps_option = " ".join(f"-J {jump}" for jump in jumps)
+    cmd = ["ssh", "-N", "-L", f"{local_target}:{remote_target}", f"{jumps_option}", f"{destination}"]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return proc
 
-    def __init__(self, clouds: list) -> None:
-        """Initialize the ConnectManager."""
-        self._juju_config = None  # TODO: add and use config argument
-        self._uuid = uuid.uuid4()
-        self._juju_data = None
-        self._active = False
-        self._clouds = clouds
 
-    def __enter__(self) -> "ConnectManager":
-        """Enter ConnectManager."""
-        self.activate()
-        return self
+def sshuttle_proc(destination: str, subnets: List[str], jumps: Optional[List[str]] = None) -> subprocess.Popen:
+    """Create sshuttle tunnels."""
+    extra_options = []
+    if jumps:
+        jumps_option = " ".join(f"-J {jump}" for jump in jumps)
+        extra_options.append(f"-e 'ssh {jumps_option}'")
 
-    def __exit__(self, *args):
-        """Leave ConnectManager."""
-        self.deactivate()
+    subnet_options = " ".join(subnets)
+    cmd = ["sshuttle", f"{subnet_options}", f"{extra_options}", "-r", f"{destination}"]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return proc
+
+
+@dataclasses.dataclass
+class Connection:
+    controller: juju.Controller
+    connection_process: Optional[subprocess.Popen]
+
+
+class ConnectManager(object):
+    """Connect manager is used to define connections for controllers.
+
+    Usage example:
+    async def task(...):
+        ...
+        connect_manager = ConnectManager():
+        controller = await connect_manager.get_controller(controller_config)
+        ...
+    """
+
+    _manager = None
+    _connections = {}
+
+    def __new__(cls):
+        if getattr(cls, "_manager") is None:
+            cls._manager = super(ConnectManager, cls).__new__(cls)
+
+        return cls._manager
 
     @property
-    def active(self) -> bool:
-        """Check if environment in active."""
-        return self._active
+    def connections(self) -> Dict[str, Connection]:
+        """Return list of connections ."""
+        return self._connections
 
-    @property
-    def juju_data(self) -> Path:
-        """Get path to JUJU_DATA directory."""
-        if not self._juju_data:
-            tmpdir = tempfile.gettempdir()
-            self._juju_data = Path(tmpdir, str(self._uuid))
-            self._juju_data.mkdir()
+    async def clean(self):
+        """Close all connections."""
+        for connection in self.connections.values():
+            await connection.controller.disconnect()
+            # if any connection process was used kill it
+            if connection.connection_process:
+                connection.connection_process.kill()
 
-        return self._juju_data
+    async def get_controller(
+        self, config: Dict[str, Any()], sshuttle: bool = False, reconnect: bool = False
+    ) -> juju.Controller:
+        """Get controller."""
+        controller = self.connections.get(config["name"]).controller
+        if controller is None:
+            controller = await self.get_controller(config, sshuttle)
+        elif reconnect:
+            await controller.disconnect()
+            controller = await self.get_controller(config, sshuttle)
 
-    @property
-    def uuid(self) -> uuid.UUID:
-        """Get UUID of connection."""
-        return self._uuid
+        # TODO: add connection validation and reconnect if it's needed
+        return controller
 
-    def activate(self) -> "ConnectManager":
-        """Activate environment for Juju.
+    # TODO: add controller_config typehint
+    async def connect(self, controller_config, sshuttle: bool = False) -> juju.Controller:
+        """Prepare connection to Controller and return it."""
+        controller = juju.Controller()
+        local_endpoint = None
+        connection_process = None
+        if controller_config.connection and not sshuttle:
+            port = get_free_tcp_port()
+            local_endpoint = f"localhost:{port}"
+            connection_process = ssh_port_forwarding_proc(
+                local_endpoint,
+                controller_config.endpoint,
+                controller_config.connection.destination,
+                controller_config.connection.jumps,
+            )
+        elif controller_config.connection and sshuttle:
+            connection_process = sshuttle_proc(
+                controller_config.connection.destination,
+                controller_config.connection.subnets,
+                controller_config.connection.jumps,
+            )
 
-        This function will define the JUJU_DATA environment with the clouds, controllers and accounts that Juju should
-        connect to. At the same to
-        - port-forward option: The port for the controller and specific units will be port-forwarded.
-                               # TODO: add examples here or in config structure
-        - sshuttle tunel option: Sshuttle can be created to redirect whole subnets.
-                                 # TODO: add examples here or in config structure
-        - JAAS option: use controllers registered with JAAS in JUJU_DATA generated phase
-                       # TODO: add examples here or in config structure
-        """
-        generate_juju_data(self.juju_data)
-        # TODO: set JUJU_DATA environment variable
-        # TODO: port-forward or sshuttle
-        self._active = True
-        return self
+        await controller.connect(
+            endpoint=local_endpoint or controller_config.endpoint,
+            username=controller_config.username,
+            password=controller_config.password,
+            cacert=controller_config.ca_cert,
+        )
+        self.connections[controller_config.name] = Connection(controller, connection_process)
+        return controller
 
-    def deactivate(self):
-        """Deactivate environment for Juju.
 
-        Remove the JUJU_DATA environment and stop any port-forwarding or sshuttle tunel.
-        """
-        shutil.rmtree(self.juju_data)
-        # TODO: unset JUJU_DATA environment variable
-        # TODO: stop port-forwarding or sshuttle
-        self._active = False
+get_controller = ConnectManager().get_controller
