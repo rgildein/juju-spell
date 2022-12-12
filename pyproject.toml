@@ -4,7 +4,7 @@
 
 [tool.flake8]
 ignore = ["C901", "D100", "D101", "D102", "D103", "W503", "W504"]
-exclude = ['.eggs', '.git', '.tox', '.venv', '.build', 'report']
+exclude = ['.eggs', '.git', '.tox', '.venv', 'build', 'report']
 max-line-length = 120
 max-complexity = 10
 

@@ -52,7 +52,7 @@ controllers:
         -----END CERTIFICATE-----
     username: admin
     password: pass1234
-    model_mappings:
+    model_mapping:
       lma: monitoring
       default: production
     connection:  # optional
