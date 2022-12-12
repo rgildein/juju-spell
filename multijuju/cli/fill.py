@@ -1,8 +1,10 @@
 """Filter function that handle argparse type."""
-from argparse import ArgumentParser
+import re
+from argparse import ArgumentParser, ArgumentTypeError
 from typing import List
 
 from multijuju.config import Config
+from multijuju.filter import FILTER_STR_REGEX, get_filtered_config
 
 
 def parse_comma_separated_str(comma_separated_str: str) -> List[str]:
@@ -12,8 +14,19 @@ def parse_comma_separated_str(comma_separated_str: str) -> List[str]:
 
 def parse_filter(value: str) -> Config:
     """Type check for argument filter."""
-    # TODO: Implement later
-    return value
+    if not (
+        re.findall(
+            FILTER_STR_REGEX,
+            value,
+        )
+        or len(value) == 0  # no filter
+    ):
+        raise ArgumentTypeError(f"Argument filter format wrong: {value}")
+
+    filtered_config = get_filtered_config(value)
+    if len(filtered_config.controllers) <= 0:
+        raise ArgumentTypeError("No match controller")
+    return filtered_config
 
 
 def add_assignment_argument(parser: ArgumentParser):
@@ -38,6 +51,6 @@ def add_connection_manager_argument(parser: ArgumentParser):
         "--filter",
         type=parse_filter,
         required=False,
-        nargs="+",
-        help="Comma separated controller filter string",
+        default="",
+        help="""Key-value pair comma separated string in double quotes e.g., "a=1,2,3 b=4,5,6". """,
     )
