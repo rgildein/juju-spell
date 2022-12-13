@@ -1,7 +1,7 @@
 from juju.controller import Controller
 from juju.model import Model
 
-from multijuju.commands.base_command import BaseJujuCommand
+from multijuju.commands.base import BaseJujuCommand
 
 
 class JujuStatusCommand(BaseJujuCommand):

@@ -21,7 +21,7 @@ import textwrap
 
 from craft_cli import emit
 
-from multijuju.cli.base_cli import BaseCLICommand
+from multijuju.cli.base import BaseCLICommand
 
 
 class JujuActionsCLI(BaseCLICommand):

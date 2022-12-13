@@ -15,31 +15,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """multijuju base juju command."""
-from abc import ABC
+from abc import ABC, abstractmethod
 
-from craft_cli import emit
 from juju.controller import Controller
 
 
 class BaseJujuCommand(ABC):
-    async def run(self, filtered_list, **kwargs):
-        result_list = []
-        for cloud in filtered_list:
-            controller = await self.open_connection(cloud)
-            result = await self.execute(controller, **kwargs)
-            await self.close_connection(controller)
-            result_list.append(result)
-        return result_list
+    async def run(self, controller: Controller, **kwargs):
+        """Wrap only wrapper."""
+        return await self.execute(controller, **kwargs)
 
+    @staticmethod
+    def need_sshuttle():
+        return False
+
+    @abstractmethod
     async def execute(self, controller: Controller, **kwargs):
+        """Execute function.
+
+        This part will be the main part function
+        Args:
+            controller: This will be juju controller
+            kwargs: This will be the kwargs passed to the function which
+                will contain the config for the selected controller
+        """
         pass
-
-    async def open_connection(self, cloud) -> Controller:
-        emit.message("opening connection")
-        controller = Controller()
-        await controller.connect_controller(cloud)
-        return controller
-
-    async def close_connection(self, controller: Controller):
-        await controller.disconnect()
-        emit.message("closing connection")

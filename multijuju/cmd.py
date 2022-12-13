@@ -16,14 +16,12 @@ from craft_cli import (
 )
 
 from multijuju import cli, utils
-from multijuju.connections.connect_manager import ConnectManager
-from multijuju.filter import Filter
 from multijuju.settings import APP_NAME, APP_VERSION
 
 COMMAND_GROUPS = [
     CommandGroup(
         "ReadOnly",
-        [cli.JujuStatusCLI, cli.ShowControllerInformationCommand],
+        [cli.JujuStatusCMD, cli.ShowControllerInformationCMD],
     ),
     CommandGroup(
         "ReadWrite",
@@ -37,7 +35,6 @@ COMMAND_GROUPS = [
 GLOBAL_ARGS = [
     GlobalArgument("version", "flag", "-V", "--version", "Show the application version and exit"),
     GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS),
-    GlobalArgument("filter", "option", "-f", "--filter", "Filters for clouds to select"),
 ]
 
 
@@ -91,12 +88,9 @@ def exec_cmd():
             extra_global_args=GLOBAL_ARGS,
             default_command=cli.VersionCLI,
         )
-
-        global_commands = dispatcher.pre_parse_args(sys.argv[1:])
-        Filter.filter_clouds(global_commands["filter"])
+        dispatcher.pre_parse_args(sys.argv[1:])
         dispatcher.load_command(None)
-        with ConnectManager(Filter.filtered_clouds):
-            dispatcher.run()
+        dispatcher.run()
     except (ArgumentParsingError, ProvideHelpException) as err:
         print(err, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()

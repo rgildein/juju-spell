@@ -17,18 +17,19 @@
 """Command entrypoint for ControllerInformationCommand."""
 import textwrap
 
-from craft_cli import emit
-
+from multijuju.assignment.runner import run
 from multijuju.async_handler import run_async
-from multijuju.cli.base_cli import BaseCLICommand
-from multijuju.commands.show_controller import cmd_show_controller
+from multijuju.commands.show_controller import ShowControllerCommand
+
+from .base import BaseCLICommand
+from .fill import add_assignment_argument, add_connection_manager_argument
 
 
-class ShowControllerInformationCommand(BaseCLICommand):
+class ShowControllerInformationCMD(BaseCLICommand):
     """Show controller information."""
 
     name = "show-controller"
-    help_msg = "Remove the indicated file."
+    help_msg = "Show controller information"
     overview = textwrap.dedent(
         """
         Show controller information
@@ -37,16 +38,8 @@ class ShowControllerInformationCommand(BaseCLICommand):
 
     def fill_parser(self, parser):
         """Add own parameters to the general parser."""
-        pass
+        add_connection_manager_argument(parser=parser)
+        add_assignment_argument(parser=parser)
 
     def execute(self, parsed_args):
-        emit.message("Start Command {}.".format("controller info"))
-        run_async(self._exec(parsed_args))
-        emit.message("Command {} successfully.".format("controller info"))
-
-    async def _exec(self, parser_args):
-        """Async function with business logic."""
-        emit.message("Start command {} on cloud {}".format("controller-info", "{cloud name}"))
-        await cmd_show_controller(
-            controller_name="overlord",  # This need to be update later
-        )
+        run_async(run(ShowControllerCommand(), parsed_args))

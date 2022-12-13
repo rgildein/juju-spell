@@ -5,24 +5,20 @@
 flowchart TD
 
 main(__main__ entrypoint)
-check-arguments(check arguments with argparse type, fillter here)
-juju-status-cli
-connect-manager-context-manager(connect-manager context manager)
-assignment-iter(iter over clouds and models, runtime filter models)
+check-arguments(check arguments with argparse type, load config and filter controllers)
+status-cli
 
 subgraph cli module
 craft-cli
-juju-status-cli
+status-cli
 end
 
-subgraph fill.py
+subgraph filler
 check-arguments
 end
 
 subgraph assignment module
-assignment-func
-connect-manager-context-manager
-assignment-iter
+assignment-run-func
 end
 
 subgraph commands module
@@ -40,23 +36,32 @@ craft-cli -.-> check-arguments
 
 check-arguments -.-> craft-cli
 
-craft-cli --> juju-status-cli
-juju-status-cli --> assignment-func --> connect-manager-context-manager
-connect-manager -.-> connect-manager-context-manager
-connect-manager-context-manager--> assignment-iter
-assignment-iter --> juju-commands
+craft-cli --> status-cli
+
+subgraph assignment-run-func
+
+run-serial
+run-batch
+run-parallel
+end
+
+status-cli --run-async--> assignment-run-func
+connect-manager -.-> assignment-run-func
+
+assignment-run-func --> juju-commands
 ```
 
 
 - **__main__ entrypoint**:
     - setup cli and exit
-- **fill.py**
+- **filter**
     - all filter function will put here
 - **cli module**
-    - Only include setup cli command & argparse.
+    - Only include setup cli command, add argparse, and format output.
 - **assignment module**
     - High level business logic.
     - The connection should be handled here.
+    - Provides different assignment functions to run e.g., batch, serial and parallel.
 - **connect manager**
     - JAAS/ssh tunnel/sshuttle connection manager
 - **commands module**
