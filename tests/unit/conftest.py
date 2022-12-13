@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from multijuju.config import Controller
+from multijuju.config import Connection, Controller
 
 TEST_CONFIG = """
 controllers:
@@ -67,4 +67,6 @@ def test_config(tmp_path):
 @pytest.fixture
 def controller_config(test_config):
     """Return first controller configuration form test config."""
-    return Controller(**test_config["controllers"][0])
+    controller = test_config["controllers"][0]
+    controller["connection"] = Connection(controller["connection"])
+    return Controller(**controller)
