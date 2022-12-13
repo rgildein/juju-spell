@@ -21,7 +21,7 @@ import json
 from craft_cli import BaseCommand, emit
 
 
-class BaseCLICommand(BaseCommand):
+class BaseCMD(BaseCommand):
     """base cli command for handling contexts."""
 
     def run(self, parsed_args):

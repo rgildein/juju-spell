@@ -2,6 +2,6 @@
 import asyncio
 
 
-def run_async(func):
+def run_async(*tasks):
     loop = asyncio.get_event_loop()
-    return loop.run_until_complete(func)
+    return loop.run_until_complete(asyncio.gather(*tasks))

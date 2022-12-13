@@ -21,11 +21,11 @@ from multijuju.assignment.runner import run
 from multijuju.async_handler import run_async
 from multijuju.commands.show_controller import ShowControllerCommand
 
-from .base import BaseCLICommand
+from .base import BaseCMD
 from .fill import add_assignment_argument, add_connection_manager_argument
 
 
-class ShowControllerInformationCMD(BaseCLICommand):
+class ShowControllerInformationCMD(BaseCMD):
     """Show controller information."""
 
     name = "show-controller"
@@ -42,4 +42,4 @@ class ShowControllerInformationCMD(BaseCLICommand):
         add_assignment_argument(parser=parser)
 
     def execute(self, parsed_args):
-        run_async(run(ShowControllerCommand(), parsed_args))
+        return run_async(run(ShowControllerCommand(), parsed_args))

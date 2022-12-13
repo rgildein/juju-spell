@@ -21,15 +21,15 @@ from multijuju.settings import APP_NAME, APP_VERSION
 COMMAND_GROUPS = [
     CommandGroup(
         "ReadOnly",
-        [cli.JujuStatusCMD, cli.ShowControllerInformationCMD],
+        [cli.StatusCMD, cli.ShowControllerInformationCMD],
     ),
     CommandGroup(
         "ReadWrite",
         [
-            cli.JujuActionsCLI,
+            cli.ActionsCMD,
         ],
     ),
-    CommandGroup("Other", [cli.VersionCLI]),
+    CommandGroup("Other", [cli.VersionCMD]),
 ]
 
 GLOBAL_ARGS = [
@@ -86,7 +86,7 @@ def exec_cmd():
             COMMAND_GROUPS,
             summary=summary,
             extra_global_args=GLOBAL_ARGS,
-            default_command=cli.VersionCLI,
+            default_command=cli.VersionCMD,
         )
         dispatcher.pre_parse_args(sys.argv[1:])
         dispatcher.load_command(None)
