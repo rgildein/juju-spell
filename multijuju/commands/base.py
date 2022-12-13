@@ -16,8 +16,16 @@
 
 """multijuju base juju command."""
 from abc import ABC, abstractmethod
+from enum import Enum
 
 from juju.controller import Controller
+
+
+class CommandTarget(Enum):
+    """Define the target of command."""
+
+    CONTROLLER = "controller"
+    MODEL = "model"
 
 
 class BaseJujuCommand(ABC):
@@ -28,6 +36,10 @@ class BaseJujuCommand(ABC):
     @staticmethod
     def need_sshuttle():
         return False
+
+    @staticmethod
+    def target():
+        return CommandTarget.CONTROLLER
 
     @abstractmethod
     async def execute(self, controller: Controller, **kwargs):
