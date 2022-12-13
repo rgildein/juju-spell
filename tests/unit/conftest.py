@@ -58,7 +58,7 @@ def test_config_path(tmp_path) -> Path:
 
 
 @pytest.fixture
-def test_config(tmp_path):
+def test_config():
     """Return config file as dict."""
     config = yaml.safe_load(io.StringIO(TEST_CONFIG))
     return config
