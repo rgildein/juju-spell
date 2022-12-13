@@ -54,3 +54,12 @@ def add_connection_manager_argument(parser: ArgumentParser):
         default="",
         help="""Key-value pair comma separated string in double quotes e.g., "a=1,2,3 b=4,5,6". """,
     )
+
+
+def add_model_argument(parser: ArgumentParser):
+    """Add juju models filter to ArgumentParser."""
+    parser.add_argument(
+        "--models",
+        type=parse_comma_separated_str,
+        help="model filter",
+    )

@@ -29,7 +29,7 @@ from multijuju.commands.status import StatusCommand
 from .fill import (
     add_assignment_argument,
     add_connection_manager_argument,
-    parse_comma_separated_str,
+    add_model_argument,
 )
 
 
@@ -50,6 +50,7 @@ class StatusCMD(BaseCMD):
         """Add arguments specific to the export-login command."""
         add_assignment_argument(parser)
         add_connection_manager_argument(parser)
+        add_model_argument(parser)
         parser.add_argument(
             "--relations",
             default=False,
@@ -60,12 +61,6 @@ class StatusCMD(BaseCMD):
             action="store_true",
             default=False,
             help="Show 'storage' section",
-        )
-        parser.add_argument(
-            "--models",
-            default=False,
-            type=parse_comma_separated_str,
-            help="model filter",
         )
 
     def execute(self, parsed_args) -> Dict[str, List[FullStatus]]:
