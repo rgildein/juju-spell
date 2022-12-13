@@ -20,8 +20,7 @@ async def run_parallel(command: BaseJujuCommand, parsed_args):
 
 async def run_serial(command: BaseJujuCommand, parsed_args):
     list = []
-    # cm = ConnectManager()
-    for controller_config in parsed_args.filtered_config.controllers:
+    for controller_config in parsed_args.filter.controllers:
         controller = await get_controller()
         output = await command.run(
             controller=controller,
