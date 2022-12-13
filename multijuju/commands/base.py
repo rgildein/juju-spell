@@ -17,6 +17,7 @@
 """multijuju base juju command."""
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Any
 
 from juju.controller import Controller
 
@@ -42,7 +43,7 @@ class BaseJujuCommand(ABC):
         return CommandTarget.CONTROLLER
 
     @abstractmethod
-    async def execute(self, controller: Controller, **kwargs):
+    async def execute(self, controller: Controller, **kwargs) -> Any:
         """Execute function.
 
         This part will be the main part function

@@ -14,26 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju juju status command."""
-import argparse
+"""Multijuju juju status command."""
 import textwrap
-from typing import Dict, List
 
-from juju.client._definitions import FullStatus
+from craft_cli.dispatcher import _CustomArgumentParser
 
-from multijuju.assignment.runner import run
-from multijuju.async_handler import run_async
-from multijuju.cli.base import BaseCMD
+from multijuju.cli.base import BaseJujuCMD
 from multijuju.commands.status import StatusCommand
 
-from .fill import (
-    add_assignment_argument,
-    add_connection_manager_argument,
-    add_model_argument,
-)
 
-
-class StatusCMD(BaseCMD):
+class StatusCMD(BaseJujuCMD):
     """multijuju juju status command."""
 
     name = "status"
@@ -43,15 +33,23 @@ class StatusCMD(BaseCMD):
     The status command shows the status of the selected model.
 
     Example:
+    $ multijuju status
+    {
+     "my-controller": {
+      "controller": {
+       "applications": {},
+       "branches": {},
+       "controller_timestamp": "2022-12-14T21:42:15.50508204Z",
+       ...
+       }
+    }
     """
     )
+    command = StatusCommand
 
-    def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
+    def fill_parser(self, parser: _CustomArgumentParser) -> None:
         """Add arguments specific to the export-login command."""
         super().fill_parser(parser)
-        add_assignment_argument(parser)
-        add_connection_manager_argument(parser)
-        add_model_argument(parser)
         parser.add_argument(
             "--relations",
             default=False,
@@ -63,7 +61,3 @@ class StatusCMD(BaseCMD):
             default=False,
             help="Show 'storage' section",
         )
-
-    def execute(self, parsed_args) -> Dict[str, List[FullStatus]]:
-        result = run_async(run(StatusCommand(), parsed_args))
-        return result

@@ -16,20 +16,38 @@
 
 """multijuju base cli command."""
 import argparse
+import asyncio
 import copy
 import json
-from typing import Any
+from abc import ABCMeta, abstractmethod
+from pathlib import Path
+from typing import Any, Optional
 
 from craft_cli import BaseCommand, emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
-from .utils import confirm
+from multijuju.assignment.runner import run
+from multijuju.cli.utils import confirm, parse_comma_separated_str, parse_filter
+from multijuju.commands.base import BaseJujuCommand
+from multijuju.settings import CONFIG_PATH
 
 
-class BaseCMD(BaseCommand):
-    """base cli command for handling contexts."""
+class BaseCMD(BaseCommand, metaclass=ABCMeta):
+    """Base CLI command for handling contexts."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Update initialization."""
+        self.emit = emit
+        super().__init__(*args, **kwargs)
 
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
+        """Define base arguments for commands."""
+        parser.add_argument(
+            "--config",
+            type=Path,
+            default=CONFIG_PATH,
+            help="config file path",
+        )
         parser.add_argument(
             "--silent",
             default=False,
@@ -37,37 +55,107 @@ class BaseCMD(BaseCommand):
             help="This will skip all the confirm check.",
         )
 
+    def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
+        """Execute CLI command."""
+        try:
+            self.before(parsed_args)
+            retval = self.execute(parsed_args)
+            message = self.format_output(retval)
+            self.emit.message(message)
+            self.after(parsed_args)
+            return 0
+        except Exception as error:
+            # TODO: improve exception handling
+            self.emit.error(error)
+            return 1
+
+    def format_output(self, retval: Any) -> str:
+        """Pretty formatter for output."""
+        self.emit.debug(f"formatting the `{retval}` value")
+        # TODO: support more types here
+        if isinstance(retval, (dict, list)):
+            # TODO: add support for table, yaml, ... format
+            return json.dumps(retval, default=vars, indent=1)
+
+        return str(retval)
+
+    @abstractmethod
+    def execute(self, parsed_args: argparse.Namespace) -> Any:
+        """Abstract function need to be defined for each multijuju CLI command."""
+        pass
+
+    def before(self, parsed_args: argparse.Namespace) -> None:
+        """Run before execution."""
+        pass
+
+    def after(self, parsed_args: argparse.Namespace) -> None:
+        """Run after execution."""
+        pass
+
+
+class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
+    """Base CLI command for handling any Juju commands."""
+
+    @property
+    @abstractmethod
+    def command(self):
+        pass
+
+    def fill_parser(self, parser: _CustomArgumentParser) -> None:
+        """Define base arguments for Juju commands.
+
+        This will add arguments for connection, filtering and config.
+        """
+        super().fill_parser(parser)
+        parser.add_argument(
+            "--run-type",
+            type=str,
+            choices=["parallel", "batch", "serial"],
+            default="serial",
+            help="parallel, batch or serial",
+        )
+        parser.add_argument(
+            "--filter",
+            type=parse_filter,
+            required=False,
+            default="",
+            help="""Key-value pair comma separated string in double quotes e.g., "a=1,2,3 b=4,5,6". """,
+        )
+        parser.add_argument(
+            "--models",
+            type=parse_comma_separated_str,
+            help="model filter",
+        )
+
+    def execute(self, parsed_args: argparse.Namespace) -> Any:
+        """Execute Juju Commands."""
+        if self.command is None or not issubclass(self.command, BaseJujuCommand):
+            raise RuntimeError(f"command `{self.command}` is incorrect")
+
+        loop = asyncio.get_event_loop()  # TODO: optionally new event loop, it's needed ???
+        task = loop.create_task(run(self.command(), parsed_args))
+        return loop.run_until_complete(asyncio.gather(task))
+
+
+class JujuReadCMD(BaseJujuCMD, metaclass=ABCMeta):
+    """Base CLI command for handling Juju commands with read access."""
+
+
+class JujuWriteCMD(BaseJujuCMD, metaclass=ABCMeta):
+    """Base CLI command for handling Juju commands with write access."""
+
     @staticmethod
     def safe_parsed_args_output(parsed_args: argparse.Namespace) -> argparse.Namespace:
         """Remove sensitive information from output."""
         tmp_parsed_args = copy.deepcopy(parsed_args)
-
-        # Only display controller name when output
-        if hasattr(tmp_parsed_args, "filter"):
-            tmp_parsed_args.filter.controllers = [controller.name for controller in parsed_args.filter.controllers]
-
+        tmp_parsed_args.filter.controllers = [controller.name for controller in parsed_args.filter.controllers]
         return tmp_parsed_args
 
-    def run(self, parsed_args: argparse.Namespace) -> None:
-        if parsed_args.silent or confirm(
+    def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
+        """Execute CLI command for JujuCommands."""
+        if not parsed_args.silent and not confirm(
             text=f"Continue on cmd: {self.name} parsed_args: {self.safe_parsed_args_output(parsed_args)}"
         ):
-            self.before(parsed_args)
-            retval = self.execute(parsed_args)
-            self.format_output(retval)
-            self.after(parsed_args)
+            return 0
 
-    def format_output(self, retval: Any) -> Any:
-        """Pretty formatter for output."""
-        # TODO: pretty output, extract to own class
-        # console output logic will be here yaml, json output will be central
-        return emit.message(json.dumps(retval, default=vars, indent=1))
-
-    def execute(self, parsed_args: argparse.Namespace) -> None:
-        pass
-
-    def before(self, parsed_args: argparse.Namespace) -> None:
-        pass
-
-    def after(self, parsed_args: argparse.Namespace) -> None:
-        pass
+        return super().run(parsed_args)

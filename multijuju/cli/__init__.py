@@ -17,14 +17,13 @@
 """Multijuju cli commands."""
 from craft_cli import CommandGroup
 
-from .actions import ActionsCMD
 from .show_controller import ShowControllerInformationCMD
 from .status import StatusCMD
 from .version import VersionCMD
 
 COMMAND_GROUPS = [
     CommandGroup("ReadOnly", [StatusCMD, ShowControllerInformationCMD]),
-    CommandGroup("ReadWrite", [ActionsCMD]),
+    # CommandGroup("ReadWrite", []),
     CommandGroup("Other", [VersionCMD]),
 ]
-__all__ = ["COMMAND_GROUPS", "ActionsCMD", "StatusCMD", "VersionCMD", "ShowControllerInformationCMD"]
+__all__ = ["COMMAND_GROUPS", "StatusCMD", "VersionCMD", "ShowControllerInformationCMD"]

@@ -14,30 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju version command."""
-import argparse
+"""Multijuju version command."""
 import textwrap
 
-from craft_cli import BaseCommand, emit
-
 from multijuju import settings
+from multijuju.cli.base import BaseCMD
 
 
-class VersionCMD(BaseCommand):
-    """multijuju version command."""
+class VersionCMD(BaseCMD):
+    """Get multijuju version command."""
 
     name = "version"
-    help_msg = "Gets the status of selected model"
+    help_msg = "Gets the version of multijuju."
     overview = textwrap.dedent(
         """
-    The status command shows the version of multijuju.
+    The version command shows the version of multijuju.
 
     Example:
+
+    $ multijuju version
+    0.0.1
     """
     )
 
-    def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
-        pass
-
-    def run(self, parsed_args):
-        emit.message(settings.APP_VERSION)
+    def execute(self, parsed_args) -> str:
+        """Return multijuju version."""
+        return settings.APP_VERSION
