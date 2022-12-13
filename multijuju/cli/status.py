@@ -17,16 +17,23 @@
 """multijuju juju status command."""
 import argparse
 import textwrap
+from typing import Dict, List
+
+from juju.client._definitions import FullStatus
 
 from multijuju.assignment.runner import run
 from multijuju.async_handler import run_async
-from multijuju.cli.base import BaseCLICommand
-from multijuju.commands.juju_status_command import JujuStatusCommand
+from multijuju.cli.base import BaseCMD
+from multijuju.commands.status import StatusCommand
 
-from .fill import add_assignment_argument, add_connection_manager_argument
+from .fill import (
+    add_assignment_argument,
+    add_connection_manager_argument,
+    parse_comma_separated_str,
+)
 
 
-class JujuStatusCMD(BaseCLICommand):
+class StatusCMD(BaseCMD):
     """multijuju juju status command."""
 
     name = "status"
@@ -54,6 +61,13 @@ class JujuStatusCMD(BaseCLICommand):
             default=False,
             help="Show 'storage' section",
         )
+        parser.add_argument(
+            "--models",
+            default=False,
+            type=parse_comma_separated_str,
+            help="model filter",
+        )
 
-    def execute(self, parsed_args):
-        run_async(run(JujuStatusCommand(), parsed_args))
+    def execute(self, parsed_args) -> Dict[str, List[FullStatus]]:
+        result = run_async(run(StatusCommand(), parsed_args))
+        return result

@@ -14,39 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju juju actions command."""
-
+"""multijuju version command."""
 import argparse
 import textwrap
 
-from craft_cli import emit
+from craft_cli import BaseCommand, emit
 
-from multijuju.cli.base import BaseCLICommand
+from multijuju import settings
 
 
-class JujuActionsCLI(BaseCLICommand):
-    """multijuju juju actions command."""
+class VersionCMD(BaseCommand):
+    """multijuju version command."""
 
-    name = "actions"
-    help_msg = "Shows the actions of selected application"
+    name = "version"
+    help_msg = "Gets the status of selected model"
     overview = textwrap.dedent(
         """
-    The actions command shows the actions of the selected application.
+    The status command shows the version of multijuju.
 
     Example:
     """
     )
 
     def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
-        """Add arguments specific to the export-login command."""
-        parser.add_argument(
-            "application",
-            default=str,
-            help="Name of the application",
-        )
+        pass
 
-    def execute(self, parsed_args):
-        message = ""
-        if parsed_args.application:
-            message += f"${parsed_args.application} actions are restart, represent, click \n"
-        emit.message(message)
+    def run(self, parsed_args):
+        emit.message(settings.APP_VERSION)
