@@ -6,10 +6,10 @@ from multijuju.settings import CONFIG_PATH
 from .config import Config, Controller, load_config
 
 # --filter "a=v1,v2,v3 b=v4,v5,v6"
-FILTER_STR_REGEX = r"([^=]+)=([^=]+)(?:\s|$)"
+FILTER_EXPRESSION_REGEX = r"([^=]+)=([^=]+)(?:\s|$)"
 
 
-def make_controllers_filter(filter_str):
+def make_controllers_filter(filter_expression):
     """Build filter func to config's controller."""
 
     def filter(controller: Controller):
@@ -19,8 +19,8 @@ def make_controllers_filter(filter_str):
         # inside controller match the values list a in [v1,v2,v3]
         # and b in [v4,v5,v6].
         for key, values in re.findall(
-            FILTER_STR_REGEX,
-            filter_str,
+            FILTER_EXPRESSION_REGEX,
+            filter_expression,
         ):
             if not controller.get(key) in values.split(","):
                 return False
@@ -29,10 +29,10 @@ def make_controllers_filter(filter_str):
     return filter
 
 
-def get_filtered_config(filter_str) -> Config:
+def get_filtered_config(filter_expression: str) -> Config:
     config = load_config(CONFIG_PATH)
-    if filter_str == "":
+    if filter_expression == "":
         return config
-    controller_filter = make_controllers_filter(filter_str)
+    controller_filter = make_controllers_filter(filter_expression)
     config.controllers = list(filter(controller_filter, config.controllers))
     return config
