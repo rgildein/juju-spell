@@ -2,5 +2,7 @@
 
 from .manager import ConnectManager
 
+__all__ = ["connect_manager", "get_controller"]
+
 connect_manager = ConnectManager()
 get_controller = connect_manager.get_controller

@@ -11,9 +11,14 @@ MAX_FRAME_SIZE = 6**24
 
 
 def get_free_tcp_port() -> int:
-    """Get free TCP port."""
+    """Get free TCP port.
+
+    This function will return free port on local system. This port will be used to port-forward remote controller
+    to localhost:<port>.
+    """
     tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp.bind(("", 0))
+    # TODO: we need to select a port from the predefined range
     _, port = tcp.getsockname()
     tcp.close()
     return port
@@ -22,7 +27,26 @@ def get_free_tcp_port() -> int:
 def ssh_port_forwarding_proc(
     local_target: str, remote_target: str, destination: str, jumps: Optional[List[str]] = None
 ) -> subprocess.Popen:
-    """Port forward target through destination."""
+    """Port forward target through destination.
+
+    Example:
+    Call this function as follows
+    ```python
+    ssh_port_forwarding_proc("localhost:17071", "10.1.1.99:17070", "gandalf@customer", ["bastion"])
+    ```
+    is equivalent to
+    ```bash
+    ssh -N -L localhost:17071:10.1.1.99:17070 -J bastion gandalf@customer
+    ```
+    and it will port-forward the `10.1.1.99:17070` to `localhost:17071`.
+
+    :param local_target: bind_address:port to which remote target will be port-forwarded
+    :param remote_target: remote host and port, which will be port-forwarded
+    :param destination: ssh destination, which may be specified as either [user@]hostname or a URI of the form
+                        `ssh://[user@]hostname[:port]`
+    :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
+                  destination
+    """
     jumps = jumps or []
     jumps_option = " ".join(f"-J {jump}" for jump in jumps)
 
@@ -32,7 +56,26 @@ def ssh_port_forwarding_proc(
 
 
 def sshuttle_proc(subnets: List[str], destination: str, jumps: Optional[List[str]] = None) -> subprocess.Popen:
-    """Create sshuttle tunnels."""
+    """Create sshuttle tunnel.
+
+    Example:
+    Call this function as follows
+    ```python
+    sshuttle_proc(["10.1.1.0/24"], "gandalf@customer", ["bastion"])
+    ```
+    is equivalent to
+    ```bash
+    sshuttle -r gandalf@customer -e 'ssh -J bastion' 10.1.1.0/24
+    ```
+    and it will create ssh tunnel and add subnetworks to iptables. This will redirect all traffic to subnets through
+    this tunnel.
+
+    :param subnets: capture and forward traffic to these subnets
+    :param destination: ssh hostname (and optional username and password) of remote sshuttle server
+                        [USERNAME[:PASSWORD]@]ADDR[:PORT]
+    :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
+                  destination
+    """
     jumps = jumps or []
     jumps_option = " ".join(f"-J {jump}" for jump in jumps)
     extra_options = "" if not jumps else f"-e 'ssh {jumps_option}'"
@@ -132,7 +175,7 @@ class ConnectManager(object):
             await connection.controller.disconnect()
             # if any connection process was used kill it
             if connection.connection_process:
-                connection.connection_process.kill()
+                connection.connection_process.terminate()
 
             del self.connections[name]
 

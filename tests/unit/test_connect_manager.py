@@ -195,7 +195,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         for connection in connections:
             connection.controller.disconnect.assert_called_once()
             if connection.connection_process is not None:
-                connection.connection_process.kill.assert_called_once()
+                connection.connection_process.terminate.assert_called_once()
 
     async def test_get_controller_invalid_controller_config(self):
         """Test function to get controller with invalid controller config."""
