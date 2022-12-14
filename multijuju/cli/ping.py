@@ -14,17 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Multijuju cli commands."""
-from craft_cli import CommandGroup
+"""Multijuju juju ping command."""
+import textwrap
 
-from .ping import PingCMD
-from .show_controller import ShowControllerInformationCMD
-from .status import StatusCMD
-from .version import VersionCMD
+from multijuju.cli.base import JujuReadCMD
+from multijuju.commands.ping import PingCommand
 
-COMMAND_GROUPS = [
-    CommandGroup("ReadOnly", [StatusCMD, ShowControllerInformationCMD, PingCMD]),
-    # CommandGroup("ReadWrite", []),
-    CommandGroup("Other", [VersionCMD]),
-]
-__all__ = ["COMMAND_GROUPS", "StatusCMD", "VersionCMD", "ShowControllerInformationCMD", "PingCMD"]
+
+class PingCMD(JujuReadCMD):
+    """Multijuju ping command to verify connection to controller."""
+
+    name = "ping"
+    help_msg = "Check connection to controller(s)"
+    overview = textwrap.dedent(
+        """
+    The ping command check connection to controller(s).
+
+    Example:
+    $ multijuju ping
+    {
+        "my-controller": "accessible"
+    }
+    """
+    )
+    command = PingCommand
