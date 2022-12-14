@@ -16,6 +16,7 @@ def confirm(
     abort: bool = False,
     prompt_suffix: str = ": ",
     show_default: bool = True,
+    silent: bool = False,
 ) -> bool:
     """Prompts for confirmation (yes/no question).
 
@@ -29,7 +30,10 @@ def confirm(
                   exception by raising :exc:`Abort`.
     :param prompt_suffix: a suffix that should be added to the prompt.
     :param show_default: shows or hides the default value in the prompt.
+    :param silent: Skip the check
     """
+    if silent:
+        return True
     prompt = text
     default_str = "y/n" if default is None else ("Y/n" if default else "y/N")
     if show_default is not None and show_default:

@@ -27,6 +27,14 @@ from .utils import confirm
 class BaseCMD(BaseCommand):
     """base cli command for handling contexts."""
 
+    def fill_parser(self, parser):
+        parser.add_argument(
+            "--silent",
+            default=False,
+            action="store_true",
+            help="This will skip all the confirm check.",
+        )
+
     @staticmethod
     def safe_parsed_args_output(parsed_args):
         """Remove sensitive information from output."""
@@ -42,7 +50,8 @@ class BaseCMD(BaseCommand):
 
     def run(self, parsed_args):
         if confirm(
-            text=("Continue on" f" cmd: {self.name}" f" parsed_args: {self.safe_parsed_args_output(parsed_args)}",)
+            text=("Continue on" f" cmd: {self.name}" f" parsed_args: {self.safe_parsed_args_output(parsed_args)}"),
+            silent=parsed_args.silent,
         ):
             self.before(parsed_args)
             retval = self.execute(parsed_args)

@@ -38,13 +38,9 @@ class ShowControllerInformationCMD(BaseCMD):
 
     def fill_parser(self, parser):
         """Add own parameters to the general parser."""
+        super().fill_parser(parser=parser)
         add_connection_manager_argument(parser=parser)
         add_assignment_argument(parser=parser)
-        parser.add_argument(
-            "--yes",
-            dest="yes or not",
-            help="...",
-        )
 
     def execute(self, parsed_args):
         return run_async(run(ShowControllerCommand(), parsed_args))
