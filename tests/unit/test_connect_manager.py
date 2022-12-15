@@ -217,6 +217,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         config = self.controller_config_1
         self.connect_manager._connect = mock_connect = AsyncMock()
         self.connect_manager.connections[config.name] = mocked_connection = AsyncMock()
+        mocked_connection.controller.is_connected = lambda: True
 
         controller = await self.connect_manager.get_controller(config, reconnect=True)
 
@@ -242,6 +243,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         """Test function to get controller, which already exists."""
         config = self.controller_config_1
         self.connect_manager.connections[config.name] = mocked_connection = AsyncMock()
+        mocked_connection.controller.is_connected = lambda: True
 
         controller = await self.connect_manager.get_controller(config)
 

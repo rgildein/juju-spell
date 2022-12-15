@@ -8,30 +8,34 @@ Provides different ways to run the Juju command:
 """
 
 from argparse import Namespace
-from collections import defaultdict
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-import juju
 from juju.model import Model
 
 from multijuju.commands.base import BaseJujuCommand, CommandTarget
+from multijuju.config import Controller
+from multijuju.connections import get_controller
+
+REULT_TYPE = Dict[str, Dict[str, Any]]
+RESULTS_TYPE = List[REULT_TYPE]
 
 
-async def get_controller():
-    """Get controller for local controller.
-
-    Dummy function used only for short term.
-    """
-    controller = juju.controller.Controller(max_frame_size=6**24)
-    await controller.connect()
-    return controller
+def get_result(controller_config: Controller, output: Any) -> REULT_TYPE:
+    """Get command result."""
+    return {
+        "context": {
+            "name": controller_config.name,
+            "customer": controller_config.customer,
+        },
+        "output": output,
+    }
 
 
 async def run_parallel(command: BaseJujuCommand, parsed_args):
     pass
 
 
-async def run_serial(command: BaseJujuCommand, parsed_args) -> Dict[str, Any]:
+async def run_serial(command: BaseJujuCommand, parsed_args) -> RESULTS_TYPE:
     """Run controller target command serially.
 
     Parameters:
@@ -40,15 +44,16 @@ async def run_serial(command: BaseJujuCommand, parsed_args) -> Dict[str, Any]:
     Returns:
         results(Dict): Controller dict with result.
     """
-    results = {}
+    results: RESULTS_TYPE = []
     for controller_config in parsed_args.filter.controllers:
-        controller = await get_controller()
+        controller = await get_controller(controller_config)
 
         output = await command.run(
             controller=controller,
             parsed_args=parsed_args,
         )
-        results[controller_config.name] = output
+        results.append(get_result(controller_config, output))
+
     return results
 
 
@@ -64,7 +69,7 @@ async def run_batch_model(command: BaseJujuCommand, parsed_args):
     pass
 
 
-async def run_serial_model(command: BaseJujuCommand, parsed_args: Namespace) -> Dict[str, Dict[str, Any]]:
+async def run_serial_model(command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
     """Run model target command serially.
 
     Parameters:
@@ -73,13 +78,14 @@ async def run_serial_model(command: BaseJujuCommand, parsed_args: Namespace) -> 
     Returns:
         results(Dict): Controller dict which value is model dict.
     """
-    results: Dict[str, Dict[str, Any]] = defaultdict(lambda: defaultdict(dict))
+    results: RESULTS_TYPE = []
     for controller_config in parsed_args.filter.controllers:
-        controller = await get_controller()
+        controller = await get_controller(controller_config)
         model_names = await controller.get_models()
+        outputs = {}
 
         for model_name in model_names:
-            if (parsed_args.models and model_name in parsed_args.models) or not parsed_args.models:
+            if not parsed_args.models or model_name in parsed_args.models:
                 model = Model()
                 await model.connect_model(model_name=model_name)
                 output = await command.run(
@@ -87,7 +93,10 @@ async def run_serial_model(command: BaseJujuCommand, parsed_args: Namespace) -> 
                     model=model,
                     parsed_args=parsed_args,
                 )
-                results[controller_config.name][model_name] = output
+                outputs[model_name] = output
+
+        results.append(get_result(controller_config, outputs))
+
     return results
 
 

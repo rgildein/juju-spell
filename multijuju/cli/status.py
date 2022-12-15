@@ -48,6 +48,7 @@ class StatusCMD(BaseCMD):
 
     def fill_parser(self, parser: "argparse.ArgumentParser") -> None:
         """Add arguments specific to the export-login command."""
+        super().fill_parser(parser)
         add_assignment_argument(parser)
         add_connection_manager_argument(parser)
         add_model_argument(parser)
