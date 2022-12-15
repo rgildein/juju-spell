@@ -1,11 +1,10 @@
 import io
 from pathlib import Path
-from unittest import mock
 
 import pytest
 import yaml
 
-from multijuju.config import Config
+from multijuju.config import Connection, Controller
 
 TEST_CONFIG = """
 controllers:
@@ -22,7 +21,7 @@ controllers:
         -----END CERTIFICATE-----
     username: admin
     password: pass1234
-    model_mappings:
+    model_mapping:
       lma: monitoring
       default: production
     connection:
@@ -42,7 +41,7 @@ controllers:
         -----END CERTIFICATE-----
     username: admin
     password: pass1234
-    model_mappings:
+    model_mapping:
       lma: monitoring
       default: production
 """
@@ -59,9 +58,15 @@ def test_config_path(tmp_path) -> Path:
 
 
 @pytest.fixture
-def test_config(tmp_path):
+def test_config():
     """Return config file as dict."""
-    with mock.patch("multijuju.config.load_config") as mock_load_config:
-        config = yaml.safe_load(io.StringIO(TEST_CONFIG))
-        mock_load_config.return_value = Config(**config)
-        yield config
+    config = yaml.safe_load(io.StringIO(TEST_CONFIG))
+    return config
+
+
+@pytest.fixture
+def controller_config(test_config):
+    """Return first controller configuration form test config."""
+    controller = test_config["controllers"][0]
+    controller["connection"] = Connection(controller["connection"])
+    return Controller(**controller)

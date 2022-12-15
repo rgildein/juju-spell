@@ -54,40 +54,60 @@ class String(confuse.Template):
         self.fail(self._message, view, True)
 
 
-MULTIJUJU_CONFIG_TEMPLATE = confuse.AttrDict(
+class ControllerDict(confuse.MappingTemplate):
+    """Controller template."""
+
+    def value(self, view, template=None):
+        """Get Controller object from dict."""
+        output = super().value(view, template)
+        return Controller(**output)
+
+
+class ConnectionDict(confuse.MappingTemplate):
+    """Connection template."""
+
+    def value(self, view, template=None):
+        """Get Connection object from dict."""
+        output = super().value(view, template)
+        return Connection(**output)
+
+
+MULTIJUJU_CONFIG_TEMPLATE = confuse.MappingTemplate(
     {
         "controllers": confuse.Sequence(
-            {
-                "name": str,
-                "customer": str,
-                "owner": str,
-                "description": confuse.Optional(str),
-                "tags": confuse.Optional(confuse.Sequence(str)),
-                "risk": confuse.Choice(range(1, 6), default=5),
-                "endpoint": String(API_ENDPOINT_REGEX, "Invalid api endpoint definition"),
-                "ca_cert": String(CA_CERT_REGEX, "Invalid ca-cert format"),
-                "username": str,
-                "password": str,
-                "model_mappings": confuse.AttrDict(
-                    {
-                        "lma": confuse.String(default="lma"),
-                        "default": confuse.String(default="production"),
-                    }
-                ),
-                "connection": confuse.Optional(
-                    confuse.AttrDict(
+            ControllerDict(
+                {
+                    "name": str,
+                    "customer": str,
+                    "owner": str,
+                    "description": confuse.Optional(str),
+                    "tags": confuse.Optional(confuse.Sequence(str)),
+                    "risk": confuse.Choice(range(1, 6), default=5),
+                    "endpoint": String(API_ENDPOINT_REGEX, "Invalid api endpoint definition"),
+                    "ca_cert": String(CA_CERT_REGEX, "Invalid ca-cert format"),
+                    "username": str,
+                    "password": str,
+                    "model_mapping": confuse.MappingTemplate(
                         {
-                            "subnets": confuse.Optional(
-                                confuse.Sequence(String(SUBNET_REGEX, "Invalid subnet definition"))
-                            ),
-                            "destination": String(DESTINATION_REGEX, "Invalid destination definition"),
-                            "jumps": confuse.Optional(
-                                confuse.Sequence(String(DESTINATION_REGEX, "Invalid jump definition"))
-                            ),
+                            "lma": confuse.String(default="lma"),
+                            "default": confuse.String(default="production"),
                         }
-                    )
-                ),
-            }
+                    ),
+                    "connection": confuse.Optional(
+                        ConnectionDict(
+                            {
+                                "subnets": confuse.Optional(
+                                    confuse.Sequence(String(SUBNET_REGEX, "Invalid subnet definition"))
+                                ),
+                                "destination": String(DESTINATION_REGEX, "Invalid destination definition"),
+                                "jumps": confuse.Optional(
+                                    confuse.Sequence(String(DESTINATION_REGEX, "Invalid jump definition"))
+                                ),
+                            }
+                        )
+                    ),
+                }
+            )
         ),
     }
 )
@@ -133,4 +153,5 @@ def load_config(path: Path) -> Config:
     valid_config = _config.get(MULTIJUJU_CONFIG_TEMPLATE)  # TODO: catch exception here
     logger.debug("config was validated")
     config = Config(**valid_config)
+
     return config

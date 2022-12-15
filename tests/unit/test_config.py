@@ -1,7 +1,15 @@
 import pytest
 from confuse import ConfigTypeError, ConfigView
 
-from multijuju.config import SUBNET_REGEX, UUID_REGEX, Config, String, load_config
+from multijuju.config import (
+    SUBNET_REGEX,
+    UUID_REGEX,
+    Config,
+    Connection,
+    Controller,
+    String,
+    load_config,
+)
 
 
 @pytest.mark.parametrize(
@@ -32,6 +40,8 @@ def test_load_config(test_config_path):
     """Test load config."""
     config = load_config(test_config_path)
     assert isinstance(config, Config)
+    assert isinstance(config.controllers[0], Controller)
+    assert isinstance(config.controllers[0].connection, Connection)
     assert config.controllers[0].name == "example_controller"
     assert config.controllers[0].endpoint == "10.1.1.46:17070"
     assert config.controllers[1].name == "example_controller_without_optional"
