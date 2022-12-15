@@ -1,13 +1,12 @@
 # Output format for json, yaml
 
-
 ```json
 [
 	{
 		"context" : {
 			"customer": "",
-			"name": "" 
-			
+			"name": ""
+
 		}
 		"output" : {
 			"ping": {},
@@ -16,10 +15,10 @@
 	},
 	{
 		"context" : {
-		
+
 		}
 		"output" : {
-		
+
 		}
 	}
 ]
