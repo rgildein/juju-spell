@@ -1,5 +1,7 @@
 """Filter logic."""
 import re
+import typing as t
+from dataclasses import asdict
 
 from multijuju.settings import CONFIG_PATH
 
@@ -10,20 +12,28 @@ FILTER_EXPRESSION_REGEX = r"([^=]+)=([^=]+)(?:\s|$)"
 
 
 def make_controllers_filter(filter_expression):
-    """Build filter func to config's controller."""
+    """Build filter func to config's controller.
+
+    If the filter_str is "a=v1,v2,v3 b=v4,v5,v6"
+    This will iterate over keys [a,b] to check the value
+    inside controller match the values list a in [v1,v2,v3]
+    and b in [v4,v5,v6].
+    """
 
     def filter(controller: Controller):
         """Filter controllers."""
-        # If the filter_str is "a=v1,v2,v3 b=v4,v5,v6"
-        # This will iterate over keys [a,b] to check the value
-        # inside controller match the values list a in [v1,v2,v3]
-        # and b in [v4,v5,v6].
+        controller_asdict = asdict(controller)
         for key, values in re.findall(
             FILTER_EXPRESSION_REGEX,
             filter_expression,
         ):
-            if not controller.get(key) in values.split(","):
-                return False
+            target_val: t.Union[t.List[str], str] = controller_asdict.get(key)
+            if key == "tags":
+                if not len(set(target_val) & set(values)) > 0:
+                    return False
+            if isinstance(target_val, str):
+                if not asdict(controller).get(key) in values.split(","):
+                    return False
         return True
 
     return filter
