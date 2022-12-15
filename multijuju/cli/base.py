@@ -16,19 +16,47 @@
 
 """multijuju base cli command."""
 
+import copy
 import json
 
 from craft_cli import BaseCommand, emit
+
+from .utils import confirm
 
 
 class BaseCMD(BaseCommand):
     """base cli command for handling contexts."""
 
+    def fill_parser(self, parser):
+        parser.add_argument(
+            "--silent",
+            default=False,
+            action="store_true",
+            help="This will skip all the confirm check.",
+        )
+
+    @staticmethod
+    def safe_parsed_args_output(parsed_args):
+        """Remove sensitive information from output."""
+        tmp_parsed_args = copy.deepcopy(parsed_args)
+
+        # Only display controller name when output
+        if tmp_parsed_args.filter:
+            tmp_parsed_args.filter.controllers = []
+            for controller in parsed_args.filter.controllers:
+                controller.ca_cert = None
+                tmp_parsed_args.filter.controllers.append(controller.name)
+        return tmp_parsed_args
+
     def run(self, parsed_args):
-        self.before(parsed_args)
-        retval = self.execute(parsed_args)
-        self.format_output(retval)
-        self.after(parsed_args)
+        if confirm(
+            text=("Continue on" f" cmd: {self.name}" f" parsed_args: {self.safe_parsed_args_output(parsed_args)}"),
+            silent=parsed_args.silent,
+        ):
+            self.before(parsed_args)
+            retval = self.execute(parsed_args)
+            self.format_output(retval)
+            self.after(parsed_args)
 
     def format_output(self, retval):
         """Pretty formatter for output."""
