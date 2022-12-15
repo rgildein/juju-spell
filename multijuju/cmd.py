@@ -6,7 +6,6 @@ import sys
 
 from craft_cli import (
     ArgumentParsingError,
-    CommandGroup,
     CraftError,
     Dispatcher,
     EmitterMode,
@@ -15,25 +14,11 @@ from craft_cli import (
     emit,
 )
 
-from multijuju import cli, utils
+from multijuju import utils
+from multijuju.cli import COMMAND_GROUPS
 from multijuju.settings import APP_NAME, APP_VERSION
 
-COMMAND_GROUPS = [
-    CommandGroup(
-        "ReadOnly",
-        [cli.StatusCMD, cli.ShowControllerInformationCMD],
-    ),
-    CommandGroup(
-        "ReadWrite",
-        [
-            cli.ActionsCMD,
-        ],
-    ),
-    CommandGroup("Other", [cli.VersionCMD]),
-]
-
 GLOBAL_ARGS = [
-    GlobalArgument("version", "flag", "-V", "--version", "Show the application version and exit"),
     GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS),
 ]
 
@@ -73,21 +58,11 @@ def get_verbosity() -> EmitterMode:
 
 def exec_cmd():
     """Execute craft cli."""
-    emit.init(
-        get_verbosity(),
-        APP_NAME,
-        f"Starting {APP_NAME} app {APP_VERSION}.",
-    )
+    emit.init(get_verbosity(), APP_NAME, f"Starting {APP_NAME} app {APP_VERSION}.")
     summary = "One juju to rule them all."
 
     try:
-        dispatcher = Dispatcher(
-            APP_NAME,
-            COMMAND_GROUPS,
-            summary=summary,
-            extra_global_args=GLOBAL_ARGS,
-            default_command=cli.VersionCMD,
-        )
+        dispatcher = Dispatcher(APP_NAME, COMMAND_GROUPS, summary=summary, extra_global_args=GLOBAL_ARGS)
         dispatcher.pre_parse_args(sys.argv[1:])
         dispatcher.load_command(None)
         dispatcher.run()

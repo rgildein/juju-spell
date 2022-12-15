@@ -1,10 +1,12 @@
 """Filter function that handle argparse type."""
 import re
 from argparse import ArgumentParser, ArgumentTypeError
+from pathlib import Path
 from typing import List
 
 from multijuju.config import Config
 from multijuju.filter import FILTER_EXPRESSION_REGEX, get_filtered_config
+from multijuju.settings import CONFIG_PATH
 
 
 def parse_comma_separated_str(comma_separated_str: str) -> List[str]:
@@ -39,8 +41,8 @@ def add_assignment_argument(parser: ArgumentParser):
     )
     parser.add_argument(
         "--config",
-        type=str,
-        default="./multi-juju-config.yaml",
+        type=Path,
+        default=CONFIG_PATH,
         help="config file path",
     )
 

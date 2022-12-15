@@ -15,11 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """multijuju base cli command."""
-
+import argparse
 import copy
 import json
+from typing import Any
 
 from craft_cli import BaseCommand, emit
+from craft_cli.dispatcher import _CustomArgumentParser
 
 from .utils import confirm
 
@@ -27,7 +29,7 @@ from .utils import confirm
 class BaseCMD(BaseCommand):
     """base cli command for handling contexts."""
 
-    def fill_parser(self, parser):
+    def fill_parser(self, parser: _CustomArgumentParser) -> None:
         parser.add_argument(
             "--silent",
             default=False,
@@ -36,39 +38,36 @@ class BaseCMD(BaseCommand):
         )
 
     @staticmethod
-    def safe_parsed_args_output(parsed_args):
+    def safe_parsed_args_output(parsed_args: argparse.Namespace) -> argparse.Namespace:
         """Remove sensitive information from output."""
         tmp_parsed_args = copy.deepcopy(parsed_args)
 
         # Only display controller name when output
-        if tmp_parsed_args.filter:
-            tmp_parsed_args.filter.controllers = []
-            for controller in parsed_args.filter.controllers:
-                controller.ca_cert = None
-                tmp_parsed_args.filter.controllers.append(controller.name)
+        if hasattr(tmp_parsed_args, "filter"):
+            tmp_parsed_args.filter.controllers = [controller.name for controller in parsed_args.filter.controllers]
+
         return tmp_parsed_args
 
-    def run(self, parsed_args):
-        if confirm(
-            text=("Continue on" f" cmd: {self.name}" f" parsed_args: {self.safe_parsed_args_output(parsed_args)}"),
-            silent=parsed_args.silent,
+    def run(self, parsed_args: argparse.Namespace) -> None:
+        if parsed_args.silent or confirm(
+            text=f"Continue on cmd: {self.name} parsed_args: {self.safe_parsed_args_output(parsed_args)}"
         ):
             self.before(parsed_args)
             retval = self.execute(parsed_args)
             self.format_output(retval)
             self.after(parsed_args)
 
-    def format_output(self, retval):
+    def format_output(self, retval: Any) -> Any:
         """Pretty formatter for output."""
         # TODO: pretty output, extract to own class
         # console output logic will be here yaml, json output will be central
         return emit.message(json.dumps(retval, default=vars, indent=1))
 
-    def execute(self, parsed_args):
+    def execute(self, parsed_args: argparse.Namespace) -> None:
         pass
 
-    def before(self, parsed_args):
-        emit.message("-----------------------------------------------------")
+    def before(self, parsed_args: argparse.Namespace) -> None:
+        pass
 
-    def after(self, parsed_args):
-        emit.message("-----------------------------------------------------")
+    def after(self, parsed_args: argparse.Namespace) -> None:
+        pass

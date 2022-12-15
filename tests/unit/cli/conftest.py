@@ -13,18 +13,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import pytest
 
-"""Multijuju cli commands."""
-from craft_cli import CommandGroup
+from multijuju.cli.base import BaseCMD
 
-from .actions import ActionsCMD
-from .show_controller import ShowControllerInformationCMD
-from .status import StatusCMD
-from .version import VersionCMD
 
-COMMAND_GROUPS = [
-    CommandGroup("ReadOnly", [StatusCMD, ShowControllerInformationCMD]),
-    CommandGroup("ReadWrite", [ActionsCMD]),
-    CommandGroup("Other", [VersionCMD]),
-]
-__all__ = ["COMMAND_GROUPS", "ActionsCMD", "StatusCMD", "VersionCMD", "ShowControllerInformationCMD"]
+class TestCMD(BaseCMD):
+    name = "test"
+    help_msg = "Test command"
+    overview = "Test command overview"
+
+
+@pytest.fixture
+def test_cmd():
+    """Test CMD child of BaseCMD."""
+    return TestCMD(config=None)
