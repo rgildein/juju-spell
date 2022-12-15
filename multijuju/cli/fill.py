@@ -4,7 +4,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 from typing import List
 
 from multijuju.config import Config
-from multijuju.filter import FILTER_STR_REGEX, get_filtered_config
+from multijuju.filter import FILTER_EXPRESSION_REGEX, get_filtered_config
 
 
 def parse_comma_separated_str(comma_separated_str: str) -> List[str]:
@@ -16,7 +16,7 @@ def parse_filter(value: str) -> Config:
     """Type check for argument filter."""
     if not (
         re.findall(
-            FILTER_STR_REGEX,
+            FILTER_EXPRESSION_REGEX,
             value,
         )
         or len(value) == 0  # no filter
