@@ -14,7 +14,7 @@ from juju.model import Model
 
 from multijuju.commands.base import BaseJujuCommand, CommandTarget
 from multijuju.config import Controller
-from multijuju.connections import get_controller
+from multijuju.connections import connect_manager, get_controller
 
 REULT_TYPE = Dict[str, Dict[str, Any]]
 RESULTS_TYPE = List[REULT_TYPE]
@@ -101,17 +101,20 @@ async def run_serial_model(command: BaseJujuCommand, parsed_args: Namespace) -> 
 
 
 async def run(command: BaseJujuCommand, parsed_args):
-    run_type = parsed_args.run_type
-    if command.target() == CommandTarget.MODEL:
-        if run_type == "parallel":
-            return await run_parallel_model(command, parsed_args)
-        if run_type == "batch":
-            return await run_batch_model(command, parsed_args)
-        return await run_serial_model(command, parsed_args)
+    try:
+        run_type = parsed_args.run_type
+        if command.target() == CommandTarget.MODEL:
+            if run_type == "parallel":
+                return await run_parallel_model(command, parsed_args)
+            if run_type == "batch":
+                return await run_batch_model(command, parsed_args)
+            return await run_serial_model(command, parsed_args)
 
-    if command.target() == CommandTarget.CONTROLLER:
-        if run_type == "parallel":
-            return await run_parallel(command, parsed_args)
-        if run_type == "batch":
-            return await run_batch(command, parsed_args)
-        return await run_serial(command, parsed_args)
+        if command.target() == CommandTarget.CONTROLLER:
+            if run_type == "parallel":
+                return await run_parallel(command, parsed_args)
+            if run_type == "batch":
+                return await run_batch(command, parsed_args)
+            return await run_serial(command, parsed_args)
+    finally:
+        await connect_manager.clean()
