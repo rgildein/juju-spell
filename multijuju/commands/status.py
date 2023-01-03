@@ -10,10 +10,5 @@ class StatusCommand(BaseJujuCommand):
     def target():
         return CommandTarget.MODEL
 
-    async def execute(
-        self,
-        controller: Controller,
-        model: Model,
-        **kwargs,
-    ) -> FullStatus:
+    async def execute(self, controller: Controller, model: Model, **kwargs) -> FullStatus:
         return await model.get_status()

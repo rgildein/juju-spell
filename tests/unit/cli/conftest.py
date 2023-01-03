@@ -13,9 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import pytest
 
-from multijuju.cli.base import BaseCMD
+from multijuju.cli.base import BaseCMD, BaseJujuCMD, JujuReadCMD, JujuWriteCMD
+from multijuju.commands.base import BaseJujuCommand
 
 
 class TestCMD(BaseCMD):
@@ -23,8 +25,47 @@ class TestCMD(BaseCMD):
     help_msg = "Test command"
     overview = "Test command overview"
 
+    def execute(self, _) -> None:
+        """Test execution."""
+        pass
+
+
+class TestJujuCommand(BaseJujuCommand):
+    async def execute(self, **kwargs) -> None:
+        pass
+
+
+class TestBaseJujuCMD(BaseJujuCMD, TestCMD):
+    command = TestJujuCommand
+
+
+class TestJujuReadCMD(JujuReadCMD, TestCMD):
+    command = TestJujuCommand
+
+
+class TestJujuWriteCMD(JujuWriteCMD, TestCMD):
+    command = TestJujuCommand
+
 
 @pytest.fixture
-def test_cmd():
-    """Test CMD child of BaseCMD."""
+def base_cmd():
+    """Return test CMD inherited from BaseCMD.."""
     return TestCMD(config=None)
+
+
+@pytest.fixture
+def base_juju_cmd():
+    """Return test CMD inherited from BaseJujuCMD."""
+    return TestBaseJujuCMD(config=None)
+
+
+@pytest.fixture
+def juju_read_cmd():
+    """Return test CMD inherited from JujuReadCMD."""
+    return TestJujuReadCMD(config=None)
+
+
+@pytest.fixture
+def juju_write_cmd():
+    """Return test CMD inherited from JujuWriteCMD."""
+    return TestJujuWriteCMD(config=None)

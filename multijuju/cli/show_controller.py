@@ -17,30 +17,18 @@
 """Command entrypoint for ControllerInformationCommand."""
 import textwrap
 
-from multijuju.assignment.runner import run
-from multijuju.async_handler import run_async
+from multijuju.cli.base import JujuReadCMD
 from multijuju.commands.show_controller import ShowControllerCommand
 
-from .base import BaseCMD
-from .fill import add_assignment_argument, add_connection_manager_argument
 
-
-class ShowControllerInformationCMD(BaseCMD):
+class ShowControllerInformationCMD(JujuReadCMD):
     """Show controller information."""
 
     name = "show-controller"
     help_msg = "Show controller information"
     overview = textwrap.dedent(
         """
-        Show controller information
-        """
+    Show controller information
+    """
     )
-
-    def fill_parser(self, parser):
-        """Add own parameters to the general parser."""
-        super().fill_parser(parser=parser)
-        add_connection_manager_argument(parser=parser)
-        add_assignment_argument(parser=parser)
-
-    def execute(self, parsed_args):
-        return run_async(run(ShowControllerCommand(), parsed_args))
+    command = ShowControllerCommand

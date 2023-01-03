@@ -18,9 +18,7 @@ from multijuju import utils
 from multijuju.cli import COMMAND_GROUPS
 from multijuju.settings import APP_NAME, APP_VERSION
 
-GLOBAL_ARGS = [
-    GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS),
-]
+GLOBAL_ARGS = [GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS)]
 
 
 def get_verbosity() -> EmitterMode:
