@@ -15,32 +15,42 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """JujuSpell base juju command."""
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any
+from abc import ABCMeta, abstractmethod
+from typing import Any, AsyncGenerator, List, Optional, Tuple
 
 from juju.controller import Controller
+from juju.model import Model
 
 
-class CommandTarget(Enum):
-    """Define the target of command."""
+class BaseJujuCommand(metaclass=ABCMeta):
+    """Base Juju commands."""
 
-    CONTROLLER = "controller"
-    MODEL = "model"
+    @staticmethod
+    async def get_filtered_models(
+        controller: Controller, models: Optional[List[str]] = None
+    ) -> AsyncGenerator[Tuple[str, Model], None]:
+        """Get filtered models for controller.
 
+        If models is None, then all models for controller will be returned.
+        """
+        all_models = await controller.get_models()
+        for model_name in all_models:
+            if not models or model_name in models:
+                model = await controller.get_model(model_name)
+                yield model_name, model
+                await model.disconnect()
 
-class BaseJujuCommand(ABC):
     async def run(self, controller: Controller, **kwargs):
-        """Wrap only wrapper."""
+        """Execute Juju command.
+
+        **This function should not change.**
+        """
         return await self.execute(controller, **kwargs)
 
-    @staticmethod
-    def need_sshuttle():
+    @property
+    def need_sshuttle(self) -> bool:
+        """Check if sshuttle is needed."""
         return False
-
-    @staticmethod
-    def target():
-        return CommandTarget.CONTROLLER
 
     @abstractmethod
     async def execute(self, controller: Controller, **kwargs) -> Any:

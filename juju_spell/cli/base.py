@@ -56,7 +56,10 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
         )
 
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
-        """Execute CLI command."""
+        """Execute CLI command.
+
+        **This function should not change.**
+        """
         try:
             self.before(parsed_args)
             retval = self.execute(parsed_args)
