@@ -16,8 +16,8 @@
 
 import pytest
 
-from multijuju.cli.base import BaseCMD, BaseJujuCMD, JujuReadCMD, JujuWriteCMD
-from multijuju.commands.base import BaseJujuCommand
+from juju_spell.cli.base import BaseCMD, BaseJujuCMD, JujuReadCMD, JujuWriteCMD
+from juju_spell.commands.base import BaseJujuCommand
 
 
 class TestCMD(BaseCMD):

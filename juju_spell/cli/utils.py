@@ -24,9 +24,9 @@ from typing import List
 
 from craft_cli import emit
 
-from multijuju.cli.exceptions import Abort
-from multijuju.config import Config
-from multijuju.filter import FILTER_EXPRESSION_REGEX, get_filtered_config
+from juju_spell.cli.exceptions import Abort
+from juju_spell.config import Config
+from juju_spell.filter import FILTER_EXPRESSION_REGEX, get_filtered_config
 
 visible_prompt_func: t.Callable[[str], str] = input
 

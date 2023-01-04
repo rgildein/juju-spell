@@ -17,8 +17,8 @@
 """Command entrypoint for ControllerInformationCommand."""
 import textwrap
 
-from multijuju.cli.base import JujuReadCMD
-from multijuju.commands.show_controller import ShowControllerCommand
+from juju_spell.cli.base import JujuReadCMD
+from juju_spell.commands.show_controller import ShowControllerCommand
 
 
 class ShowControllerInformationCMD(JujuReadCMD):

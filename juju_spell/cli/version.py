@@ -14,27 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Multijuju juju ping command."""
+"""JujuSpell version command."""
 import textwrap
 
-from multijuju.cli.base import JujuReadCMD
-from multijuju.commands.ping import PingCommand
+from juju_spell import settings
+from juju_spell.cli.base import BaseCMD
 
 
-class PingCMD(JujuReadCMD):
-    """Multijuju ping command to verify connection to controller."""
+class VersionCMD(BaseCMD):
+    """Get juju_spell version command."""
 
-    name = "ping"
-    help_msg = "Check connection to controller(s)"
+    name = "version"
+    help_msg = "Gets the version of juju_spell."
     overview = textwrap.dedent(
         """
-    The ping command check connection to controller(s).
+    The version command shows the version of juju_spell.
 
     Example:
-    $ multijuju ping
-    {
-        "my-controller": "accessible"
-    }
+
+    $ juju-spell version
+    0.0.1
     """
     )
-    command = PingCommand
+
+    def execute(self, parsed_args) -> str:
+        """Return juju_spell version."""
+        return settings.APP_VERSION

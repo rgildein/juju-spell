@@ -12,9 +12,9 @@ from typing import Any, Dict, List
 
 from juju.model import Model
 
-from multijuju.commands.base import BaseJujuCommand, CommandTarget
-from multijuju.config import Controller
-from multijuju.connections import connect_manager, get_controller
+from juju_spell.commands.base import BaseJujuCommand, CommandTarget
+from juju_spell.config import Controller
+from juju_spell.connections import connect_manager, get_controller
 
 REULT_TYPE = Dict[str, Dict[str, Any]]
 RESULTS_TYPE = List[REULT_TYPE]

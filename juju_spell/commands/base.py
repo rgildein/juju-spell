@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju base juju command."""
+"""juju_spell base juju command."""
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any

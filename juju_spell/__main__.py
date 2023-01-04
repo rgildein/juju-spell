@@ -18,6 +18,6 @@
 
 import sys
 
-from multijuju import cmd
+from juju_spell import cmd
 
 sys.exit(cmd.exec_cmd())

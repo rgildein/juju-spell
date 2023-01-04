@@ -14,17 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Multijuju juju status command."""
+"""JujuSpell juju status command."""
 import textwrap
 
 from craft_cli.dispatcher import _CustomArgumentParser
 
-from multijuju.cli.base import BaseJujuCMD
-from multijuju.commands.status import StatusCommand
+from juju_spell.cli.base import BaseJujuCMD
+from juju_spell.commands.status import StatusCommand
 
 
 class StatusCMD(BaseJujuCMD):
-    """multijuju juju status command."""
+    """juju_spell juju status command."""
 
     name = "status"
     help_msg = "Gets the status of selected model"
@@ -33,7 +33,7 @@ class StatusCMD(BaseJujuCMD):
     The status command shows the status of the selected model.
 
     Example:
-    $ multijuju status
+    $ juju-spell status
     {
      "my-controller": {
       "controller": {

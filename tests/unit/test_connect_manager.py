@@ -8,14 +8,14 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import yaml
 
-from multijuju import config as multijuju_config
+from juju_spell import config as juju_spell_config
 from tests.unit.conftest import TEST_CONFIG
 
 
-@mock.patch("multijuju.connections.manager.socket.socket")
+@mock.patch("juju_spell.connections.manager.socket.socket")
 def test_get_free_tcp_port(mock_socket):
     """Test getting free TCP port."""
-    from multijuju.connections.manager import get_free_tcp_port
+    from juju_spell.connections.manager import get_free_tcp_port
 
     exp_port = 1999
     mock_socket.return_value = mock_tcp = MagicMock()
@@ -46,10 +46,10 @@ def test_get_free_tcp_port(mock_socket):
         ),
     ],
 )
-@mock.patch("multijuju.connections.manager.subprocess.Popen", return_value=MagicMock)
+@mock.patch("juju_spell.connections.manager.subprocess.Popen", return_value=MagicMock)
 def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
     """Test create ssh tune for port forwarding."""
-    from multijuju.connections.manager import ssh_port_forwarding_proc
+    from juju_spell.connections.manager import ssh_port_forwarding_proc
 
     ssh_port_forwarding_proc(*args)
     mock_popen.assert_called_once_with(exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -69,27 +69,27 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
         ),
     ],
 )
-@mock.patch("multijuju.connections.manager.subprocess.Popen")
+@mock.patch("juju_spell.connections.manager.subprocess.Popen")
 def test_sshuttle_proc(mock_popen, args, exp_cmd):
     """Test create sshuttle connection."""
-    from multijuju.connections.manager import sshuttle_proc
+    from juju_spell.connections.manager import sshuttle_proc
 
     sshuttle_proc(*args)
     mock_popen.assert_called_once_with(exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-@mock.patch("multijuju.connections.connect_manager")
+@mock.patch("juju_spell.connections.connect_manager")
 def test_connect_manager(mock_connect_manager):
     """Test predefined connect_manager object."""
-    from multijuju.connections import connect_manager
+    from juju_spell.connections import connect_manager
 
     assert connect_manager == mock_connect_manager
 
 
-@mock.patch("multijuju.connections.connect_manager")
+@mock.patch("juju_spell.connections.connect_manager")
 def test_get_controller(mock_connect_manager, controller_config):
     """Test symlink for get_controller."""
-    from multijuju.connections import connect_manager
+    from juju_spell.connections import connect_manager
 
     connect_manager.get_controller(controller_config)
     mock_connect_manager.get_controller.assert_called_once_with(controller_config)
@@ -100,15 +100,15 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         """Set up before each test."""
-        from multijuju.connections import ConnectManager, connect_manager
+        from juju_spell.connections import ConnectManager, connect_manager
 
         connect_manager._manager = None  # restart connect_manager
         self.connect_manager = ConnectManager()
         # `@pytest.mark.usefixtures("controller_config")` do not work with `IsolatedAsyncioTestCase`
         config = yaml.safe_load(io.StringIO(TEST_CONFIG))
-        config["controllers"][0]["connection"] = multijuju_config.Connection(**config["controllers"][0]["connection"])
-        self.controller_config_1 = multijuju_config.Controller(**config["controllers"][0])  # with connection
-        self.controller_config_2 = multijuju_config.Controller(**config["controllers"][1])  # without connection
+        config["controllers"][0]["connection"] = juju_spell_config.Connection(**config["controllers"][0]["connection"])
+        self.controller_config_1 = juju_spell_config.Controller(**config["controllers"][0])  # with connection
+        self.controller_config_2 = juju_spell_config.Controller(**config["controllers"][1])  # without connection
 
     def tearDown(self) -> None:
         """Clean up after tests."""
@@ -116,7 +116,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
     def test_new_object(self):
         """Test get new object."""
-        from multijuju.connections.manager import ConnectManager
+        from juju_spell.connections.manager import ConnectManager
 
         connect_manager1 = ConnectManager()
         connect_manager1.connections["test"] = MagicMock()
@@ -139,15 +139,15 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         )
         assert config.name in self.connect_manager.connections
 
-    @mock.patch("multijuju.connections.manager.juju.Controller")
+    @mock.patch("juju_spell.connections.manager.juju.Controller")
     async def test_connect(self, mock_controller):
         """Test connection with direct access."""
         config = self.controller_config_2
         await self._test_connection(mock_controller, config, config.endpoint)
 
-    @mock.patch("multijuju.connections.manager.ssh_port_forwarding_proc")
-    @mock.patch("multijuju.connections.manager.get_free_tcp_port", return_value=17070)
-    @mock.patch("multijuju.connections.manager.juju.Controller")
+    @mock.patch("juju_spell.connections.manager.ssh_port_forwarding_proc")
+    @mock.patch("juju_spell.connections.manager.get_free_tcp_port", return_value=17070)
+    @mock.patch("juju_spell.connections.manager.juju.Controller")
     async def test_connect_ssh_tunel(self, mock_controller, mock_get_free_tcp_port, mock_ssh_port_forwarding_proc):
         """Test connection with ssh tunnel."""
         config = self.controller_config_1
@@ -161,8 +161,8 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
             config.connection.jumps,
         )
 
-    @mock.patch("multijuju.connections.manager.sshuttle_proc")
-    @mock.patch("multijuju.connections.manager.juju.Controller")
+    @mock.patch("juju_spell.connections.manager.sshuttle_proc")
+    @mock.patch("juju_spell.connections.manager.juju.Controller")
     async def test_connect_sshuttle(self, mock_controller, mock_sshuttle_proc):
         """Test connection with sshuttle."""
         config = self.controller_config_1
@@ -176,7 +176,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
     async def test_clean(self):
         """Test clean function."""
-        from multijuju.connections.manager import Connection
+        from juju_spell.connections.manager import Connection
 
         # define mecked connections
         connections = []
