@@ -114,8 +114,9 @@ def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_fi
 
 
 @pytest.mark.asyncio
+@patch("juju_spell.cli.base.run", new_callable=MagicMock)
 @patch("juju_spell.cli.base.asyncio")
-async def test_base_juju_cmd_execute(mock_asyncio, base_juju_cmd):
+async def test_base_juju_cmd_execute(mock_asyncio, _, base_juju_cmd):
     """Test add additional CLI arguments with BaseJujuCMD."""
     parsed_args = argparse.Namespace(**{"test": True})
     mock_asyncio.get_event_loop.return_value = loop = MagicMock()
