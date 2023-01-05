@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""juju_spell base cli command."""
+"""JujuSpell base cli command."""
 import argparse
 import asyncio
 import copy
@@ -81,7 +81,7 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
 
     @abstractmethod
     def execute(self, parsed_args: argparse.Namespace) -> Any:
-        """Abstract function need to be defined for each juju_spell CLI command."""
+        """Abstract function need to be defined for each JujuSpell CLI command."""
         pass
 
     def before(self, parsed_args: argparse.Namespace) -> None:

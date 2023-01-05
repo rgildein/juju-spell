@@ -22,10 +22,10 @@ from juju_spell.cli.base import BaseCMD
 
 
 class VersionCMD(BaseCMD):
-    """Get juju_spell version command."""
+    """Get JujuSpell version command."""
 
     name = "version"
-    help_msg = "Gets the version of juju_spell."
+    help_msg = "Gets the version of JujuSpell."
     overview = textwrap.dedent(
         """
     The version command shows the version of juju_spell.
@@ -38,5 +38,5 @@ class VersionCMD(BaseCMD):
     )
 
     def execute(self, parsed_args) -> str:
-        """Return juju_spell version."""
+        """Return JujuSpell version."""
         return settings.APP_VERSION

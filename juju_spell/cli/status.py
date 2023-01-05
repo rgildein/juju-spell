@@ -24,7 +24,7 @@ from juju_spell.commands.status import StatusCommand
 
 
 class StatusCMD(BaseJujuCMD):
-    """juju_spell juju status command."""
+    """JujuSpell juju status command."""
 
     name = "status"
     help_msg = "Gets the status of selected model"

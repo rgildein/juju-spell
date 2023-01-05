@@ -11,7 +11,7 @@ confinement: devmode
 
 apps:
   juju-spell:
-    command: bin/juju_spell
+    command: bin/juju-spell
     plugs: [ network, network-control, ssh-keys ]
     environment:
       JUJUSPELLSDIR: $SNAP_DATA/

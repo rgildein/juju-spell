@@ -1,4 +1,4 @@
-# Juju Spell
+# JujuSpell
 
 juju-spell snap controls all clouds in a centralized way
 

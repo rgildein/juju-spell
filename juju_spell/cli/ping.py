@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Juju Spell juju ping command."""
+"""JujuSpell juju ping command."""
 import textwrap
 
 from juju_spell.cli.base import JujuReadCMD
