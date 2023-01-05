@@ -43,7 +43,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
     async def run(self, controller: Controller, **kwargs):
         """Execute Juju command.
 
-        **This function should not change.**
+        **This function should not be changed.**
         """
         return await self.execute(controller, **kwargs)
 

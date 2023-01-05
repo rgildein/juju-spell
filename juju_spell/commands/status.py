@@ -9,9 +9,10 @@ from juju_spell.commands.base import BaseJujuCommand
 class StatusCommand(BaseJujuCommand):
     """Command to show status for models."""
 
-    async def execute(self, controller: Controller, **kwargs) -> Dict[str, FullStatus]:
+    async def execute(
+        self, controller: Controller, models: Optional[List[str]] = None, **kwargs
+    ) -> Dict[str, FullStatus]:
         """Get status for selected models in controller."""
-        models: Optional[List[str]] = kwargs.get("models")
         output = {}
         async for name, model in self.get_filtered_models(controller, models):
             status = await model.get_status()
