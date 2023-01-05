@@ -14,10 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Main entry point."""
+"""Command entrypoint for ControllerInformationCommand."""
+import textwrap
 
-import sys
+from juju_spell.cli.base import JujuReadCMD
+from juju_spell.commands.show_controller import ShowControllerCommand
 
-from multijuju import cmd
 
-sys.exit(cmd.exec_cmd())
+class ShowControllerInformationCMD(JujuReadCMD):
+    """Show controller information."""
+
+    name = "show-controller"
+    help_msg = "Show controller information"
+    overview = textwrap.dedent(
+        """
+    Show controller information
+    """
+    )
+    command = ShowControllerCommand

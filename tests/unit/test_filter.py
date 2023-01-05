@@ -2,8 +2,8 @@
 
 import pytest
 
-from multijuju.config import Config, Controller
-from multijuju.filter import get_filtered_config, make_controllers_filter
+from juju_spell.config import Config, Controller
+from juju_spell.filter import get_filtered_config, make_controllers_filter
 
 
 @pytest.mark.parametrize(
@@ -256,6 +256,6 @@ def test_get_filtered_config(
     controllers,
     result_controllers,
 ):
-    mocker.patch("multijuju.filter.load_config", return_value=Config(controllers=controllers))
+    mocker.patch("juju_spell.filter.load_config", return_value=Config(controllers=controllers))
     config = get_filtered_config(filter_expression=filter_expression)
     assert config == Config(controllers=result_controllers)

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""multijuju base cli command."""
+"""JujuSpell base cli command."""
 import argparse
 import asyncio
 import copy
@@ -26,10 +26,10 @@ from typing import Any, Optional
 from craft_cli import BaseCommand, emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
-from multijuju.assignment.runner import run
-from multijuju.cli.utils import confirm, parse_comma_separated_str, parse_filter
-from multijuju.commands.base import BaseJujuCommand
-from multijuju.settings import CONFIG_PATH
+from juju_spell.assignment.runner import run
+from juju_spell.cli.utils import confirm, parse_comma_separated_str, parse_filter
+from juju_spell.commands.base import BaseJujuCommand
+from juju_spell.settings import CONFIG_PATH
 
 
 class BaseCMD(BaseCommand, metaclass=ABCMeta):
@@ -81,7 +81,7 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
 
     @abstractmethod
     def execute(self, parsed_args: argparse.Namespace) -> Any:
-        """Abstract function need to be defined for each multijuju CLI command."""
+        """Abstract function need to be defined for each JujuSpell CLI command."""
         pass
 
     def before(self, parsed_args: argparse.Namespace) -> None:

@@ -2,7 +2,7 @@ from juju.client._definitions import FullStatus
 from juju.controller import Controller
 from juju.model import Model
 
-from multijuju.commands.base import BaseJujuCommand, CommandTarget
+from juju_spell.commands.base import BaseJujuCommand, CommandTarget
 
 
 class StatusCommand(BaseJujuCommand):

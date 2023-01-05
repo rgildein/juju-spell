@@ -14,21 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Command entrypoint for ControllerInformationCommand."""
+"""JujuSpell juju ping command."""
 import textwrap
 
-from multijuju.cli.base import JujuReadCMD
-from multijuju.commands.show_controller import ShowControllerCommand
+from juju_spell.cli.base import JujuReadCMD
+from juju_spell.commands.ping import PingCommand
 
 
-class ShowControllerInformationCMD(JujuReadCMD):
-    """Show controller information."""
+class PingCMD(JujuReadCMD):
+    """JujuSpell ping command to verify connection to controller."""
 
-    name = "show-controller"
-    help_msg = "Show controller information"
+    name = "ping"
+    help_msg = "Check connection to controller(s)"
     overview = textwrap.dedent(
         """
-    Show controller information
+    The ping command check connection to controller(s).
+
+    Example:
+    $ juju-spell ping
+    {
+        "my-controller": "accessible"
+    }
     """
     )
-    command = ShowControllerCommand
+    command = PingCommand

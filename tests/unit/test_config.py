@@ -1,7 +1,7 @@
 import pytest
 from confuse import ConfigTypeError, ConfigView
 
-from multijuju.config import (
+from juju_spell.config import (
     SUBNET_REGEX,
     UUID_REGEX,
     Config,

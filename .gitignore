@@ -1,6 +1,6 @@
 dist/
 build/
-multijuju.egg-info/
+juju_spell.egg-info/
 *.pyc
 *.snap
 __pycache__/
