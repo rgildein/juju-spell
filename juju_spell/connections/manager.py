@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from juju import juju
 
-from multijuju.config import Controller
+from juju_spell.config import Controller
 
 MAX_FRAME_SIZE = 6**24
 
@@ -108,7 +108,7 @@ class ConnectManager(object):
         example 2
 
         ```python
-        from multijuju.connection import connect_manager
+        from juju_spell.connection import connect_manager
 
         async def task1(...):
             ...

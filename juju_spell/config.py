@@ -72,7 +72,7 @@ class ConnectionDict(confuse.MappingTemplate):
         return Connection(**output)
 
 
-MULTIJUJU_CONFIG_TEMPLATE = confuse.MappingTemplate(
+JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
     {
         "controllers": confuse.Sequence(
             ControllerDict(
@@ -150,7 +150,7 @@ def load_config(path: Path) -> Config:
 
     # use confuse library only for validation
     _config = RootView([source])
-    valid_config = _config.get(MULTIJUJU_CONFIG_TEMPLATE)  # TODO: catch exception here
+    valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
     logger.debug("config was validated")
     config = Config(**valid_config)
 

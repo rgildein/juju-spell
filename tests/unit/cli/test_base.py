@@ -22,8 +22,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from multijuju.config import Config, Controller
-from multijuju.settings import CONFIG_PATH
+from juju_spell.config import Config, Controller
+from juju_spell.settings import CONFIG_PATH
 
 
 def test_base_cmd_fill_parser(base_cmd):
@@ -83,8 +83,8 @@ def test_base_cmd_format_output(output, exp_formatted_output, base_cmd):
     assert base_cmd.format_output(output) == exp_formatted_output
 
 
-@patch("multijuju.cli.base.parse_filter")
-@patch("multijuju.cli.base.parse_comma_separated_str")
+@patch("juju_spell.cli.base.parse_filter")
+@patch("juju_spell.cli.base.parse_comma_separated_str")
 def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_filter, base_juju_cmd):
     """Test add additional CLI arguments with BaseJujuCMD."""
     parser = MagicMock()
@@ -114,7 +114,7 @@ def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_fi
 
 
 @pytest.mark.asyncio
-@patch("multijuju.cli.base.asyncio")
+@patch("juju_spell.cli.base.asyncio")
 async def test_base_juju_cmd_execute(mock_asyncio, base_juju_cmd):
     """Test add additional CLI arguments with BaseJujuCMD."""
     parsed_args = argparse.Namespace(**{"test": True})
@@ -176,13 +176,13 @@ def test_juju_write_cmd_safe_parsed_args_output(parsed_args, exp_parsed_args, ju
         ({"silent": True}, False, True),
     ],
 )
-@patch("multijuju.cli.base.BaseJujuCMD.run")
+@patch("juju_spell.cli.base.BaseJujuCMD.run")
 def test_juju_write_cmd_run(mock_run, parsed_args, confirm_return_value, executed, juju_write_cmd):
     """Test BaseCMD run."""
     parsed_args = argparse.Namespace(**parsed_args)
     juju_write_cmd.safe_parsed_args_output = MagicMock()
 
-    with patch("multijuju.cli.base.confirm", return_value=confirm_return_value):
+    with patch("juju_spell.cli.base.confirm", return_value=confirm_return_value):
         juju_write_cmd.run(parsed_args)
 
     assert (mock_run.call_count != 0) == executed

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 from juju.controller import Controller
 
-from multijuju.commands.ping import PingCommand
+from juju_spell.commands.ping import PingCommand
 
 
 def _get_mocked_controller(connected: bool) -> AsyncMock:

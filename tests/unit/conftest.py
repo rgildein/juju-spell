@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from multijuju.config import Connection, Controller
+from juju_spell.config import Connection, Controller
 
 TEST_CONFIG = """
 controllers:

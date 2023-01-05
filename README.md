@@ -1,6 +1,6 @@
-# Multijuju
+# JujuSpell
 
-multijuju snap controls all clouds in a centralized way
+juju-spell snap controls all clouds in a centralized way
 
 ## Purpose
 
@@ -22,12 +22,12 @@ The details of design please read [architecture.md](./docs/architecture.md)
 To get the latest stable version of the snap from Snapstore, run:
 
 ```bash
-sudo snap install multijuju
+sudo snap install juju-spell
 ```
 
 To get the latest development version of the snap, build from the source code and install with `--dangerous` flag:
 
 ```bash
 make build
-sudo snap install --dangerous multijuju.snap
+sudo snap install --dangerous juju-spell.snap
 ```

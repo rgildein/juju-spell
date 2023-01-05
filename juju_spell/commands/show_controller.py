@@ -1,7 +1,7 @@
 from juju.client._definitions import ControllerAPIInfoResults
 from juju.controller import Controller
 
-from multijuju.commands.base import BaseJujuCommand
+from juju_spell.commands.base import BaseJujuCommand
 
 
 class ShowControllerCommand(BaseJujuCommand):

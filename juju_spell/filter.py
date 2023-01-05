@@ -3,7 +3,7 @@ import re
 import typing as t
 from dataclasses import asdict
 
-from multijuju.settings import CONFIG_PATH
+from juju_spell.settings import CONFIG_PATH
 
 from .config import Config, Controller, load_config
 

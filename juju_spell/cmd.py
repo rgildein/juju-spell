@@ -14,9 +14,9 @@ from craft_cli import (
     emit,
 )
 
-from multijuju import utils
-from multijuju.cli import COMMAND_GROUPS
-from multijuju.settings import APP_NAME, APP_VERSION
+from juju_spell import utils
+from juju_spell.cli import COMMAND_GROUPS
+from juju_spell.settings import APP_NAME, APP_VERSION
 
 GLOBAL_ARGS = [GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS)]
 
@@ -36,11 +36,11 @@ def get_verbosity() -> EmitterMode:
 
     with contextlib.suppress(ValueError):
         # Parse environment variable for backwards compatibility with launchpad
-        if utils.strtobool(os.getenv("MULTIJUJU_ENABLE_DEVELOPER_DEBUG", "n").strip()):
+        if utils.strtobool(os.getenv("JUJUSPELL_ENABLE_DEVELOPER_DEBUG", "n").strip()):
             verbosity = EmitterMode.DEBUG
 
     # if defined, use environmental variable SNAPCRAFT_VERBOSITY_LEVEL
-    verbosity_env = os.getenv("MULTIJUJU_VERBOSITY_LEVEL")
+    verbosity_env = os.getenv("JUJUSPELL_VERBOSITY_LEVEL")
     if verbosity_env:
         try:
             verbosity = EmitterMode[verbosity_env.strip().upper()]

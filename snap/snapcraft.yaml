@@ -1,6 +1,6 @@
-name: multijuju
+name: juju-spell
 base: core22
-adopt-info: multijuju
+adopt-info: juju-spell
 # version: "0.1"
 summary: collects an operates at several clouds at the same time
 description: |
@@ -10,14 +10,14 @@ grade: devel
 confinement: devmode
 
 apps:
-  multijuju:
-    command: bin/multijuju
+  juju-spell:
+    command: bin/juju-spell
     plugs: [ network, network-control, ssh-keys ]
     environment:
-      MULTIJUJUDIR: $SNAP_DATA/
+      JUJUSPELLSDIR: $SNAP_DATA/
 
 parts:
-  multijuju:
+  juju-spell:
     plugin: python
     python-requirements: [ ./requirements.txt ]
     source: .
