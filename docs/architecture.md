@@ -4,7 +4,7 @@ The tools contain multiple parts:
 
 - Connection
 - Config
-- Identidy
+- Identity
 - Assignment
 - Juju command
 - CLI command
@@ -35,8 +35,9 @@ run-parallel
 end
 
 subgraph commands
-juju-command
-compose-command
+juju-command-a
+juju-command-b
+juju-command-c
 end
 
 subgraph connections
@@ -58,8 +59,7 @@ run -.enable.-> connect-manager
 
 status-cli --run-async--> run --Result--> status-cli
 
-juju-command -.-> status-cli
-compose-command -.-> status-cli
+commands -.-> status-cli
 ```
 
 
@@ -94,7 +94,7 @@ The package *commands(juju command)* is the minimum scope juju command that can 
 
 - The package should not care the connection to the juju controller that will be build by *connection manager* and become the parameter of it.
 - The command should not care the details if user want to run multiple commands on multiple controllers. This should be handle by the *assignment* package.
-- User should have ability to combind multiple base juju commands, which will run serially, to become a compose juju command that can run on a single controller. It will also becomee a juju command.
+- User should have ability to combind multiple simple/basic juju commands, which will run serially, to become a composite juju command that can run on a single controller. It is also a juju command.
 
 
 ## CLI command
@@ -108,13 +108,18 @@ The package *commands(juju command)* is the minimum scope juju command that can 
 This may become the most complex part of the tool. It will handle the logic how to run multiple juju commands on multiple juju controllers serially or parallelly.
 
 
-If we have two commands `cmd_a`, which is a JujuCommand, and `cmd_b`, which is a ComposeCommand, will execute on three different controllers: `controller_a`, `controller_b` and `controller_c`
+If we have two commands `cmd_a`, which is a JujuCommand, and `cmd_b`, which is a CompositeCommand, will execute on three different controllers: `controller_a`, `controller_b` and `controller_c`
+
+> CompositeCommand is also a JujuCommand by execute multiple Juju commands serially.
+
+> We only parallel on controllers not on model because it's more safe and no one want to execute multiple actions in the same time on a single customer site.
+> This is too danger for operatation.
 
 
 ```python
 
 # run function in assignment package
-def run(command: Union[JujuCommand, JujuComposeCommand], **args):
+def run(command: JujuCommand, **args):
     ...
 ```
 
@@ -158,7 +163,7 @@ subgraph run-parallel
 end
 ```
 
-*Run ComposeCommand serially*
+*Run CompositeCommand serially*
 
 ```mermaid
 flowchart LR
@@ -185,7 +190,7 @@ cmd_3
 end
 ```
 
-*Run ComposeCommand parallelly*
+*Run CompositeCommand parallelly*
 
 ```mermaid
 flowchart LR
