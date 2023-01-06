@@ -10,6 +10,6 @@ class ShowControllerCommand(BaseJujuCommand):
     async def execute(self, controller: Controller, **kwargs) -> ControllerAPIInfoResults:
         """Execute main code.
 
-        Changed name becaouse this has to override base_command.
+        Changed name because this has to override base_command.
         """
         return await controller.info()
