@@ -36,9 +36,9 @@ def test_string_exception(regex, value):
         string.convert(value, view)
 
 
-def test_load_config(test_config_path):
+def test_load_config(test_global_config_path, test_personal_config_path):
     """Test load config."""
-    config = load_config(test_config_path)
+    config = load_config(test_global_config_path, test_personal_config_path)
     assert isinstance(config, Config)
     assert isinstance(config.controllers[0], Controller)
     assert isinstance(config.controllers[0].connection, Connection)
@@ -48,11 +48,11 @@ def test_load_config(test_config_path):
     assert config.controllers[1].endpoint == "10.1.1.47:17070"
 
 
-def test_optional_config_values(test_config_path):
+def test_optional_config_values(test_global_config_path, test_personal_config_path):
     """Test optional config values and default values."""
     optional_keys = ["description", "tags", "connection"]  # list of keys
     default_values = {"risk": 5}  # key and value
-    config = load_config(test_config_path)
+    config = load_config(test_global_config_path, test_personal_config_path)
     controller = config.controllers[1]
 
     assert all(getattr(controller, key) is None for key in optional_keys)

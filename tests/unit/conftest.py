@@ -4,9 +4,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from juju_spell.config import Connection, Controller
+from juju_spell.config import Connection, Controller, merge_configs
 
-TEST_CONFIG = """
+TEST_GLOBAL_CONFIG = """
 controllers:
   - name: example_controller
     customer: example_customer
@@ -19,8 +19,6 @@ controllers:
         -----BEGIN CERTIFICATE-----
         1234
         -----END CERTIFICATE-----
-    username: admin
-    password: pass1234
     model_mapping:
       lma: monitoring
       default: production
@@ -39,20 +37,38 @@ controllers:
         -----BEGIN CERTIFICATE-----
         1234
         -----END CERTIFICATE-----
-    username: admin
-    password: pass1234
     model_mapping:
       lma: monitoring
       default: production
 """
 
+TEST_PERSONAL_CONFIG = """
+controllers:
+  - name: example_controller
+    username: admin
+    password: pass1234
+  - name: example_controller_without_optional
+    username: admin
+    password: pass1234
+"""
+
 
 @pytest.fixture
-def test_config_path(tmp_path) -> Path:
-    """Return path to test config."""
-    path = tmp_path / "config.yaml"
+def test_global_config_path(tmp_path) -> Path:
+    """Return path to test global config."""
+    path = tmp_path / "global_config.yaml"
     with open(path, "w") as file:
-        file.write(TEST_CONFIG)
+        file.write(TEST_GLOBAL_CONFIG)
+
+    return path
+
+
+@pytest.fixture
+def test_personal_config_path(tmp_path) -> Path:
+    """Return path to test personal config."""
+    path = tmp_path / "personal_config.yaml"
+    with open(path, "w") as file:
+        file.write(TEST_PERSONAL_CONFIG)
 
     return path
 
@@ -60,7 +76,10 @@ def test_config_path(tmp_path) -> Path:
 @pytest.fixture
 def test_config():
     """Return config file as dict."""
-    config = yaml.safe_load(io.StringIO(TEST_CONFIG))
+    config = merge_configs(
+        yaml.safe_load(io.StringIO(TEST_GLOBAL_CONFIG)),
+        yaml.safe_load(io.StringIO(TEST_PERSONAL_CONFIG)),
+    )
     return config
 
 

@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Utilities for JujuSpell."""
-from typing import Iterable
+from collections import defaultdict
+from typing import Dict, Iterable, List
 
 
 def strtobool(value: str) -> bool:
@@ -66,3 +67,26 @@ def humanize_list(
         humanized += ","
 
     return f"{humanized} {conjunction} {quoted_items[-1]}"
+
+
+def merge_list_of_dict_by_key(key: str, lists: List[List[Dict]]):
+    """Merge multiple list of dict by key.
+
+    Example:
+        a = [{"index": 1, "v": "a"}, {"index": 2, "v": "a"}, {"index": 3, "v": "a"}]
+        b = [{"index": 1, "v": "b"}, {"index": 2, "u": "b"}, {"index": 4, "v": "b"}]
+
+        result = merge_list_of_dict_by_key(a, b)
+
+        result: [
+            {"index": 1, "v": "b"},
+            {"index": 2, "v": "b", "u": "b"},
+            {"index": 3, "v": "a"},
+            {"index": 4, "v": "b"},
+        ]
+    """
+    new_dict: Dict = defaultdict(dict)
+    for _list in lists:
+        for elem in _list:
+            new_dict[elem[key]].update(elem)
+    return list(new_dict.values())

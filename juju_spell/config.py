@@ -9,6 +9,8 @@ import confuse
 import yaml
 from confuse import RootView
 
+from juju_spell.utils import merge_list_of_dict_by_key
+
 logger = logging.getLogger(__name__)
 
 ENDPOINT_REGEX = (
@@ -121,7 +123,9 @@ class Connection:
 
 
 @dataclasses.dataclass
-class Controller:
+class GlobalController:
+    """Controller without user's username and password."""
+
     name: str
     customer: str
     owner: str
@@ -138,16 +142,44 @@ class Controller:
 
 
 @dataclasses.dataclass
+class PersonalController(GlobalController):
+    """Controller with user identity."""
+
+    username: str
+    password: str
+
+
+@dataclasses.dataclass
+class Controller(PersonalController, GlobalController):
+    pass
+
+
+@dataclasses.dataclass
 class Config:
     controllers: List[Controller]
 
 
-def load_config(path: Path) -> Config:
+def merge_configs(global_config, personal_config):
+    # Merge personal and global config
+    global_config["controllers"] = merge_list_of_dict_by_key(
+        key="name",
+        lists=[global_config["controllers"], personal_config["controllers"]],
+    )
+    return global_config
+
+
+def load_config(global_config_path: Path, personal_config_path: Path) -> Config:
     """Load ad validate yaml config file."""
-    logger.debug("loading configuration %s file", path)
-    with open(path, "r") as file:
-        source = yaml.safe_load(file)
-        logger.info("load config file from %s path", path)
+    with open(global_config_path, "r") as file:
+        global_source = yaml.safe_load(file)
+        logger.info("load global config file from %s path", global_config_path)
+
+    with open(personal_config_path, "r") as file:
+        personal_source = yaml.safe_load(file)
+        logger.info("load personal config file from %s path", personal_config_path)
+
+    # Merge personal and global config
+    source = merge_configs(global_source, personal_source)
 
     # use confuse library only for validation
     _config = RootView([source])
