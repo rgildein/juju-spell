@@ -45,3 +45,15 @@ controllers:
       jumps:  # optional
         - bastion
 ```
+
+
+## Loading configuration
+
+Currently we have three environment variables can change the way how we load config files.
+
+* `JUJUSPELL_DATA`: A fodler default at `~/.local/share/juju-spell/`
+* * `JUJUSPELL_CONFIG`: Default is `{JUJUSPELL_DATA}/config.yaml`
+* * `JUJUSPELL_PERSONAL_CONFIG`: Default is `{JUJUSPELL_DATA}/config.person.yaml`
+
+* When loading the config files, we will first load `JUJUSPELL_CONFIG` and then update it with `JUJUSPELL_PERSONAL_CONFIG` based on the unique key `uuid`, which is the controller's uuid.
+* We also provide `--config` argument. Once user give this input, we will not using the `JUJUSPELL_CONFIG` and `JUJUSPELL_PERSONAL_CONFIG` to load config but use `--config`, which should be a config file path, as the only input to load config.

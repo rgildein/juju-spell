@@ -1,6 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -13,20 +13,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from juju.controller import Controller
 
-"""JujuSpell cli commands."""
-from .add_user import AddUserCMD
-from .grant import GrantCMD
-from .ping import PingCMD
-from .show_controller import ShowControllerInformationCMD
-from .status import StatusCMD
-from .version import VersionCMD
+from juju_spell.commands.base import BaseJujuCommand
 
-__all__ = [
-    "AddUserCMD",
-    "StatusCMD",
-    "VersionCMD",
-    "ShowControllerInformationCMD",
-    "PingCMD",
-    "GrantCMD",
-]
+__all__ = ["GrantCommand", "ACL_CHOICES"]
+
+ACL_CHOICES = ["login", "add-model", "superuser"]
+
+
+class GrantCommand(BaseJujuCommand):
+    """Grant permission for user."""
+
+    async def execute(self, controller: Controller, **kwargs):
+        """Execute."""
+        result: bool = await controller.grant(username=kwargs["username"], acl=kwargs["acl"])
+        return result
