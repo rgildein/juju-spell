@@ -1,4 +1,5 @@
 import dataclasses
+import logging
 import socket
 import subprocess
 from typing import Dict, List, Optional
@@ -6,6 +7,8 @@ from typing import Dict, List, Optional
 from juju import juju
 
 from juju_spell.config import Controller
+
+logger = logging.getLogger(__name__)
 
 MAX_FRAME_SIZE = 6**24
 
@@ -21,6 +24,7 @@ def get_free_tcp_port() -> int:
     # TODO: we need to select a port from the predefined range
     _, port = tcp.getsockname()
     tcp.close()
+    logger.debug("free port %d was found", port)
     return port
 
 
@@ -47,10 +51,12 @@ def ssh_port_forwarding_proc(
     :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
                   destination
     """
+    logger.info("port forwarding %s to %s via %s", remote_target, local_target, destination)
     jumps = jumps or []
     jumps_option = " ".join(f"-J {jump}" for jump in jumps)
 
     cmd = ["ssh", "-N", "-L", f"{local_target}:{remote_target}", jumps_option, destination]
+    logger.debug("cmd `%s` will be executed", cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc
 
@@ -76,11 +82,13 @@ def sshuttle_proc(subnets: List[str], destination: str, jumps: Optional[List[str
     :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
                   destination
     """
+    logger.info("sshuttle %s subnets via %s", subnets, destination)
     jumps = jumps or []
     jumps_option = " ".join(f"-J {jump}" for jump in jumps)
     extra_options = "" if not jumps else f"-e 'ssh {jumps_option}'"
 
     cmd = ["sshuttle", "-r", destination, extra_options, *subnets]
+    logger.debug("cmd `%s` will be executed", cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc
 
@@ -139,6 +147,7 @@ class ConnectManager(object):
 
     async def _connect(self, controller_config: Controller, sshuttle: bool = False) -> juju.Controller:
         """Prepare connection to Controller and return it."""
+        logger.info("getting a new connection to controller %s", controller_config.name)
         controller = juju.Controller(max_frame_size=MAX_FRAME_SIZE)
         local_endpoint = None
         connection_process = None
@@ -164,6 +173,7 @@ class ConnectManager(object):
             password=controller_config.password,
             cacert=controller_config.ca_cert,
         )
+        logger.info("controller %s was connected", controller.controller_name)
         self.connections[controller_config.name] = Connection(controller, connection_process)
         return controller
 
@@ -178,6 +188,11 @@ class ConnectManager(object):
                 connection.connection_process.terminate()
 
             del self.connections[name]
+            logger.info(
+                "connection to %s(%s) controller was closed",
+                connection.controller.controller_name,
+                connection.controller.controller_uuid,
+            )
 
     async def get_controller(
         self, controller_config: Controller, sshuttle: bool = False, reconnect: bool = False
@@ -187,6 +202,11 @@ class ConnectManager(object):
 
         connection = self.connections.get(controller_config.name)
         if connection and connection.controller.is_connected() and not reconnect:
+            logger.info(
+                "using controller %s(%s) from cache",
+                connection.controller.controller_name,
+                connection.controller.controller_uuid,
+            )
             return connection.controller
         elif connection and reconnect:
             await connection.controller.disconnect()

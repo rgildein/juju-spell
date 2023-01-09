@@ -77,7 +77,7 @@ The use of connection manager should not care about the details inside. The conn
 
 ## Config
 
-The config path right now is under environment variable `MULTIJUJU_DATA` or `~/.local/share/multijuju` in default.
+The config path right now is under environment variable `JUJUSPELL_DATA` or `~/.local/share/juju-spell` in default.
 
 
 ===details of config here===

@@ -21,6 +21,7 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
+from craft_cli import CraftError
 
 from juju_spell.config import Config, Controller
 from juju_spell.settings import CONFIG_PATH
@@ -55,17 +56,17 @@ def test_base_cmd_run(base_cmd):
     mock_after.assert_called_once_with(parsed_args)
 
 
-def test_base_cmd_run_exception(base_cmd):
+@patch("juju_spell.cli.base.emit")
+def test_base_cmd_run_exception(mock_emit, base_cmd):
     """Test run exceptions from BaseCMD."""
     parsed_args = argparse.Namespace(**{"test": True})
     exp_error = ValueError("Some value failed")
-    base_cmd.emit = mock_emit = MagicMock()
     base_cmd.before = mock_before = MagicMock()
     mock_before.side_effect = exp_error
 
     assert base_cmd.run(parsed_args) == 1
 
-    mock_emit.error.assert_called_once_with(exp_error)
+    mock_emit.error.assert_called_once_with(CraftError(message=str(exp_error), details=""))
 
 
 @pytest.mark.parametrize(

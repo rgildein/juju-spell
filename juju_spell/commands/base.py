@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """JujuSpell base juju command."""
+import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, AsyncGenerator, List, Optional, Tuple
 
@@ -24,6 +25,12 @@ from juju.model import Model
 
 class BaseJujuCommand(metaclass=ABCMeta):
     """Base Juju commands."""
+
+    def __init__(self):
+        """Init for command."""
+        self.name = getattr(self.__class__, "__name__", "unknown")
+        # TODO: we need to set logging formatter for craft_cli with format: "%(name)s: [%(controller)s] %(message)s"
+        self.logger = logging.getLogger(self.name)
 
     @staticmethod
     async def get_filtered_models(
@@ -45,6 +52,14 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
         **This function should not be changed.**
         """
+        # configure logger with adapter to predefined controller uuid
+        self.logger = logging.LoggerAdapter(self.logger, extra={"uuid": controller.controller_uuid})
+        self.logger.info(
+            "running %s command for %s(%s) controller",
+            self.name,
+            controller.controller_name,
+            controller.controller_uuid,
+        )
         return await self.execute(controller, **kwargs)
 
     @property
