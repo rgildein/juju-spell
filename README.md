@@ -4,7 +4,7 @@ juju-spell snap controls all clouds in a centralized way
 
 ## Purpose
 
-Multijuju is a CLI tool to communicate with multiple juju controllers that may behind the jump server.
+JujuSpell is a CLI tool to communicate with multiple juju controllers that may behind the jump server.
 
 It will allow user:
 

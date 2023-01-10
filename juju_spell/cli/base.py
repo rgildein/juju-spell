@@ -23,7 +23,7 @@ from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Any, Optional
 
-from craft_cli import BaseCommand, emit
+from craft_cli import BaseCommand, CraftError, emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
 from juju_spell.assignment.runner import run
@@ -34,11 +34,6 @@ from juju_spell.settings import CONFIG_PATH
 
 class BaseCMD(BaseCommand, metaclass=ABCMeta):
     """Base CLI command for handling contexts."""
-
-    def __init__(self, *args, **kwargs) -> None:
-        """Update initialization."""
-        self.emit = emit
-        super().__init__(*args, **kwargs)
 
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         """Define base arguments for commands."""
@@ -62,19 +57,23 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
         """
         try:
             self.before(parsed_args)
+            emit.trace(f"function 'before' was run for {self.name} command")
             retval = self.execute(parsed_args)
+            emit.trace(f"raw output of {self.name} command: {retval}")
             message = self.format_output(retval)
-            self.emit.message(message)
+            emit.message(message)  # print the output
             self.after(parsed_args)
+            emit.trace(f"function 'after' was run for {self.name} command")
             return 0
         except Exception as error:
             # TODO: improve exception handling
-            self.emit.error(error)
+            emit.error(CraftError(message=str(error), details=""))
             return 1
 
-    def format_output(self, retval: Any) -> str:
+    @staticmethod
+    def format_output(retval: Any) -> str:
         """Pretty formatter for output."""
-        self.emit.debug(f"formatting the `{retval}` value")
+        emit.debug(f"formatting `{retval}`")
         # TODO: support more types here
         if isinstance(retval, (dict, list)):
             # TODO: add support for table, yaml, ... format

@@ -1,24 +1,27 @@
 """Module combinates all the commands."""
-import argparse
 import contextlib
+import logging
 import os
 import sys
 
 from craft_cli import (
     ArgumentParsingError,
+    CommandGroup,
     CraftError,
     Dispatcher,
     EmitterMode,
-    GlobalArgument,
     ProvideHelpException,
     emit,
 )
 
-from juju_spell import utils
-from juju_spell.cli import COMMAND_GROUPS
+from juju_spell import cli, utils
 from juju_spell.settings import APP_NAME, APP_VERSION
 
-GLOBAL_ARGS = [GlobalArgument("trace", "flag", "-t", "--trace", argparse.SUPPRESS)]
+COMMAND_GROUPS = [
+    CommandGroup("ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]),
+    # CommandGroup("ReadWrite", []),
+    CommandGroup("Other", [cli.VersionCMD]),
+]
 
 
 def get_verbosity() -> EmitterMode:
@@ -54,28 +57,51 @@ def get_verbosity() -> EmitterMode:
     return verbosity
 
 
-def exec_cmd():
+def get_dispatcher() -> Dispatcher:
+    """Return an instance of Dispatcher.
+
+    Run all the checks and setup required to ensure the Dispatcher can run.
+    """
+    verbosity = get_verbosity()
+    emit.init(verbosity, APP_NAME, f"Starting {APP_NAME} app {APP_VERSION}.")
+
+    # configure logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)  # set root logger to debug level so that all messages are sent to Emitter
+
+    emit.debug(f"verbosity is set to {verbosity}")
+    return Dispatcher(APP_NAME, COMMAND_GROUPS, summary="One juju to rule them all.")
+
+
+def exec_cmd() -> int:
     """Execute craft cli."""
-    emit.init(get_verbosity(), APP_NAME, f"Starting {APP_NAME} app {APP_VERSION}.")
-    summary = "One juju to rule them all."
+    dispatcher = get_dispatcher()
+    return_code = 0
 
     try:
-        dispatcher = Dispatcher(APP_NAME, COMMAND_GROUPS, summary=summary, extra_global_args=GLOBAL_ARGS)
         dispatcher.pre_parse_args(sys.argv[1:])
         dispatcher.load_command(None)
         dispatcher.run()
-    except (ArgumentParsingError, ProvideHelpException) as err:
-        print(err, file=sys.stderr)  # to stderr, as argparse normally does
+    except ArgumentParsingError as error:
+        print(error, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()
+        return_code = 127
+    except ProvideHelpException as error:
+        print(error, file=sys.stderr)  # to stderr, as argparse normally does
+        emit.ended_ok()
+        return_code = 0
     except CraftError as err:
         emit.error(err)
+        return_code = 1
     except KeyboardInterrupt as exc:
         error = CraftError("Interrupted.")
         error.__cause__ = exc
         emit.error(error)
+        return_code = 130
     except Exception as exc:
         error = CraftError(f"Application internal error: {exc!r}")
         error.__cause__ = exc
         emit.error(error)
-    else:
-        emit.ended_ok()
+        return_code = 1
+
+    return return_code

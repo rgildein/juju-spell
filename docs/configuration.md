@@ -1,6 +1,6 @@
 # Configuration
 
-The config for multijuju continues list of controllers where each controller have fallowing attributes:
+The config for JujuSpell continues list of controllers where each controller have fallowing attributes:
 
 * `name` controller name (both on the client side and in the controller)
 * `customer` customer name for better identification

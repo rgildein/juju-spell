@@ -12,4 +12,6 @@ class ShowControllerCommand(BaseJujuCommand):
 
         Changed name because this has to override base_command.
         """
-        return await controller.info()
+        info = await controller.info()
+        self.logger.debug("%s info: %s", controller.controller_uuid, info)
+        return info

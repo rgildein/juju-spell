@@ -144,6 +144,7 @@ class Config:
 
 def load_config(path: Path) -> Config:
     """Load ad validate yaml config file."""
+    logger.debug("loading configuration %s file", path)
     with open(path, "r") as file:
         source = yaml.safe_load(file)
         logger.info("load config file from %s path", path)
@@ -151,7 +152,7 @@ def load_config(path: Path) -> Config:
     # use confuse library only for validation
     _config = RootView([source])
     valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
-    logger.debug("config was validated")
+    logger.info("config was validated")
     config = Config(**valid_config)
 
     return config

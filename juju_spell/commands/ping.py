@@ -6,4 +6,6 @@ from juju_spell.commands.base import BaseJujuCommand
 class PingCommand(BaseJujuCommand):
     async def execute(self, controller: Controller, **kwargs) -> str:
         """Check if controller is connected."""
-        return "accessible" if controller.is_connected() else "unreachable"
+        connected = controller.is_connected()
+        self.logger.debug("%s is connected '%r'", controller.controller_uuid, connected)
+        return "accessible" if connected else "unreachable"
