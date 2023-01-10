@@ -16,13 +16,7 @@ class StatusCommand(BaseJujuCommand):
         output = {}
         async for name, model in self.get_filtered_models(controller, models):
             status = await model.get_status()
-            self.logger.debug(
-                "model %s status for controller %s(%s): %s",
-                name,
-                controller.controller_name,
-                controller.controller_uuid,
-                status,
-            )
+            self.logger.debug("%s model %s status: %s", controller.controller_uuid, name, status)
             output[name] = status
 
         return output

@@ -73,7 +73,7 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
     @staticmethod
     def format_output(retval: Any) -> str:
         """Pretty formatter for output."""
-        emit.debug(f"formatting `{retval}` value")
+        emit.debug(f"formatting `{retval}`")
         # TODO: support more types here
         if isinstance(retval, (dict, list)):
             # TODO: add support for table, yaml, ... format

@@ -29,7 +29,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
     def __init__(self):
         """Init for command."""
         self.name = getattr(self.__class__, "__name__", "unknown")
-        # TODO: we need to set logging formatter for craft_cli with format: "%(name)s: [%(controller)s] %(message)s"
+        # TODO: we need to set logging formatter for craft_cli with format: "%(name)s: %(message)s"
         self.logger = logging.getLogger(self.name)
 
     @staticmethod
@@ -52,14 +52,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
         **This function should not be changed.**
         """
-        # configure logger with adapter to predefined controller uuid
-        self.logger = logging.LoggerAdapter(self.logger, extra={"uuid": controller.controller_uuid})
-        self.logger.info(
-            "running %s command for %s(%s) controller",
-            self.name,
-            controller.controller_name,
-            controller.controller_uuid,
-        )
+        self.logger.info("%s running %s command", controller.controller_uuid, self.name)
         return await self.execute(controller, **kwargs)
 
     @property

@@ -188,11 +188,7 @@ class ConnectManager(object):
                 connection.connection_process.terminate()
 
             del self.connections[name]
-            logger.info(
-                "connection to %s(%s) controller was closed",
-                connection.controller.controller_name,
-                connection.controller.controller_uuid,
-            )
+            logger.info("%s connection was closed", connection.controller.controller_uuid)
 
     async def get_controller(
         self, controller_config: Controller, sshuttle: bool = False, reconnect: bool = False
@@ -202,11 +198,7 @@ class ConnectManager(object):
 
         connection = self.connections.get(controller_config.name)
         if connection and connection.controller.is_connected() and not reconnect:
-            logger.info(
-                "using controller %s(%s) from cache",
-                connection.controller.controller_name,
-                connection.controller.controller_uuid,
-            )
+            logger.info("%s using controller from cache", connection.controller.controller_uuid)
             return connection.controller
         elif connection and reconnect:
             await connection.controller.disconnect()
