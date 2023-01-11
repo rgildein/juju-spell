@@ -29,7 +29,7 @@ from craft_cli.dispatcher import _CustomArgumentParser
 from juju_spell.assignment.runner import run
 from juju_spell.cli.utils import confirm, parse_comma_separated_str, parse_filter
 from juju_spell.commands.base import BaseJujuCommand
-from juju_spell.settings import GLOBAL_CONFIG_PATH, PERSONAL_CONFIG_PATH
+from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 
 class BaseCMD(BaseCommand, metaclass=ABCMeta):
@@ -40,7 +40,7 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
         parser.add_argument(
             "--global-config",
             type=Path,
-            default=GLOBAL_CONFIG_PATH,
+            default=CONFIG_PATH,
             help="global config file path",
         )
         parser.add_argument(

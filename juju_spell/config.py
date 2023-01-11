@@ -2,6 +2,7 @@
 import dataclasses
 import logging
 import re
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -79,6 +80,7 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
         "controllers": confuse.Sequence(
             ControllerDict(
                 {
+                    "uuid": String(UUID_REGEX, "Invalid uuid definition"),
                     "name": str,
                     "customer": str,
                     "owner": str,
@@ -123,9 +125,10 @@ class Connection:
 
 
 @dataclasses.dataclass
-class GlobalController:
-    """Controller without user's username and password."""
+class Controller:
+    """Juju Controller."""
 
+    uuid: uuid.UUID
     name: str
     customer: str
     owner: str
@@ -142,49 +145,37 @@ class GlobalController:
 
 
 @dataclasses.dataclass
-class PersonalController(GlobalController):
-    """Controller with user identity."""
-
-    username: str
-    password: str
-
-
-@dataclasses.dataclass
-class Controller(PersonalController, GlobalController):
-    pass
-
-
-@dataclasses.dataclass
 class Config:
     controllers: List[Controller]
 
 
-def merge_configs(global_config, personal_config):
+def merge_configs(config: Dict, personal_config: Dict):
     # Merge personal and global config
-    global_config["controllers"] = merge_list_of_dict_by_key(
-        key="name",
-        lists=[global_config["controllers"], personal_config["controllers"]],
+    config["controllers"] = merge_list_of_dict_by_key(
+        key="uuid",
+        lists=[config["controllers"], personal_config["controllers"]],
     )
-    return global_config
+    return config
 
 
-def load_config(global_config_path: Path, personal_config_path: Path) -> Config:
+def load_config_file(path):
+    with open(path, "r") as file:
+        source = yaml.safe_load(file)
+        logger.info("load config file from %s path", path)
+    return source
+
+
+def load_config(config_path: Path, personal_config_path: Optional[Path]) -> Config:
     """Load ad validate yaml config file."""
-    with open(global_config_path, "r") as file:
-        global_source = yaml.safe_load(file)
-        logger.info("load global config file from %s path", global_config_path)
-
-    with open(personal_config_path, "r") as file:
-        personal_source = yaml.safe_load(file)
-        logger.info("load personal config file from %s path", personal_config_path)
-
-    # Merge personal and global config
-    source = merge_configs(global_source, personal_source)
+    source = load_config_file(config_path)
+    if personal_config_path:
+        personal_source = load_config_file(personal_config_path)
+        # Merge personal and default config
+        source = merge_configs(source, personal_source)
 
     # use confuse library only for validation
     _config = RootView([source])
     valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
     logger.info("config was validated")
     config = Config(**valid_config)
-
     return config

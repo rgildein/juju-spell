@@ -24,7 +24,7 @@ import pytest
 from craft_cli import CraftError
 
 from juju_spell.config import Config, Controller
-from juju_spell.settings import GLOBAL_CONFIG_PATH, PERSONAL_CONFIG_PATH
+from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 
 def test_base_cmd_fill_parser(base_cmd):
@@ -34,7 +34,7 @@ def test_base_cmd_fill_parser(base_cmd):
 
     parser.add_argument.assert_has_calls(
         [
-            mock.call("--global-config", type=Path, default=GLOBAL_CONFIG_PATH, help="global config file path"),
+            mock.call("--global-config", type=Path, default=CONFIG_PATH, help="global config file path"),
             mock.call("--personal-config", type=Path, default=PERSONAL_CONFIG_PATH, help="personal config file path"),
             mock.call("--silent", default=False, action="store_true", help="This will skip all the confirm check."),
         ]
@@ -94,7 +94,7 @@ def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_fi
 
     parser.add_argument.assert_has_calls(
         [
-            mock.call("--global-config", type=Path, default=GLOBAL_CONFIG_PATH, help="global config file path"),
+            mock.call("--global-config", type=Path, default=CONFIG_PATH, help="global config file path"),
             mock.call("--personal-config", type=Path, default=PERSONAL_CONFIG_PATH, help="personal config file path"),
             mock.call("--silent", default=False, action="store_true", help="This will skip all the confirm check."),
             mock.call(
@@ -142,6 +142,7 @@ def test_base_juju_cmd_execute_execption(base_juju_cmd):
 def _create_test_controller(name: str) -> Controller:
     """Create test controller."""
     return Controller(
+        uuid="fb006616-0176-41d8-8ba9-ec57bb6e141a",
         name=name,
         customer="test-customer",
         owner="test-owner",
