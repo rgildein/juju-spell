@@ -23,16 +23,31 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-skip_glob = '''
-/(
-    | .eggs
-    | .git
-    | .tox
-    | .venv
-    | .build
-    | report
-)/
-'''
+skip_glob = [
+  ".eggs",
+  ".git",
+  ".tox",
+  ".venv",
+  ".build",
+  "report"
+]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
+addopts = '''
+    --last-failed
+    --last-failed-no-failures all
+'''
+
+[tool.coverage.run]
+relative_files = true
+source = ["."]
+omit = ["tests/**", "docs/**", "lib/**", "snap/**", "setup.py"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.html]
+directory = "report"
+
+[tool.coverage.xml]
+output = "report/coverage.xml"
