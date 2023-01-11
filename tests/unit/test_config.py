@@ -1,5 +1,7 @@
 import io
 import uuid
+from typing import Any, Dict
+from unittest import mock
 
 import pytest
 import yaml
@@ -9,9 +11,8 @@ from juju_spell.config import (
     SUBNET_REGEX,
     UUID_REGEX,
     Config,
-    Connection,
-    Controller,
     String,
+    _validate_config,
     load_config,
     load_config_file,
     merge_configs,
@@ -43,29 +44,100 @@ def test_string_exception(regex, value):
         string.convert(value, view)
 
 
-def test_load_config(mocker, test_config_path, test_personal_config_path, mock_load_config_file_func, test_config):
-    """Test load config."""
-    mocker.patch("juju_spell.config.load_config_file", side_effect=mock_load_config_file_func)
-    mocker.patch("juju_spell.config.merge_configs", return_value=test_config)
-    config = load_config(test_config_path, test_personal_config_path)
+def _update_test_config(config: Dict[str, Any], extra_configuration: Dict[str, Any]) -> Dict[str, Any]:
+    """Update test config."""
+    updated_config = config.copy()
+    extra_connection_configuration = extra_configuration.get("connection", {})
+    extra_controller_configuration = extra_configuration.get("controllers", [])
+
+    for key, value in extra_connection_configuration.items():
+        if "connection" not in updated_config:
+            updated_config["connection"] = {}
+
+        updated_config["connection"][key] = value
+
+    for i, controller in enumerate(extra_controller_configuration):
+        if "controllers" not in updated_config:
+            updated_config["controllers"] = []
+
+        for key, value in controller.items():
+            updated_config["controllers"][i][key] = value
+
+    return updated_config
+
+
+@pytest.mark.parametrize(
+    "extra_configuration, exp_connection, exp_controller",
+    [
+        (
+            {},  # extra configuration
+            {},  # connection
+            [
+                {"name": "example_controller", "endpoint": "10.1.1.46:17070"},  # controller 0
+                {"name": "example_controller_without_optional", "endpoint": "10.1.1.47:17070"},  # controller 1
+            ],
+        ),
+        # test optional configuration option
+        (
+            {},  # extra configuration
+            {"port-range": range(17071, 17170)},  # connection
+            [
+                {"description": "some nice notes", "tags": ["test"], "risk": 3},  # controller 0
+                {"description": None, "tags": None, "risk": 5, "connection": None},  # controller 1
+            ],
+        ),
+        (
+            {"connection": {"port-range": "18000:1900"}},  # extra configuration
+            {"port-range": range(18000, 1900)},  # connection
+            [
+                {"name": "example_controller", "endpoint": "10.1.1.46:17070"},  # controller 0
+                {"name": "example_controller_without_optional", "endpoint": "10.1.1.47:17070"},  # controller 1
+            ],
+        ),
+    ],
+)
+def test_validate_config(extra_configuration, exp_connection, exp_controller, test_config):
+    """Test validate config."""
+    test_config = _update_test_config(test_config, extra_configuration)
+
+    config = _validate_config(test_config)
+
     assert isinstance(config, Config)
-    assert isinstance(config.controllers[0], Controller)
-    assert isinstance(config.controllers[0].connection, Connection)
-    assert config.controllers[0].name == "example_controller"
-    assert config.controllers[0].endpoint == "10.1.1.46:17070"
-    assert config.controllers[1].name == "example_controller_without_optional"
-    assert config.controllers[1].endpoint == "10.1.1.47:17070"
+
+    # check connections
+    for key, value in exp_connection.items():
+        assert getattr(config.connection, key) == value
+
+    # check controllers
+    for i, controller in enumerate(exp_controller):
+        for key, value in controller.items():
+            assert getattr(config.controllers[i], key) == value
 
 
-def test_optional_config_values(test_config_path, test_personal_config_path):
-    """Test optional config values and default values."""
-    optional_keys = ["description", "tags", "connection"]  # list of keys
-    default_values = {"risk": 5}  # key and value
-    config = load_config(test_config_path, test_personal_config_path)
-    controller = config.controllers[1]
+@pytest.mark.parametrize(
+    "extra_configuration",
+    [
+        {"connection": {"port-range": "17070"}},
+        {"connection": {"port-range": "1:100000"}},
+        {"controllers": [{"name": 1}]},
+        {"controllers": [{"customer": None}]},
+        {"controllers": [{"owner": None}]},
+        {"controllers": [{"tags": {"test": 1}}]},
+        {"controllers": [{"risk": 6}]},
+        {"controllers": [{"endpoint": "1.2.3"}]},
+        {"controllers": [{"endpoint": "llocalhost"}]},
+        {"controllers": [{"ca_cert": "1234"}]},
+        {"controllers": [{"connection": {"destination": "1.2.3.4", "subnets": ["1.2.3.4/00"]}}]},
+        {"controllers": [{"connection": {"destination": "1.2.3.4", "subnets": ["1.2"]}}]},
+        {"controllers": [{"connection": {"destination": "1.2.3.4", "jumps": [None]}}]},
+    ],
+)
+def test_validate_config_failure(extra_configuration, test_config):
+    """Test failure of config validation."""
+    test_config = _update_test_config(test_config, extra_configuration)
 
-    assert all(getattr(controller, key) is None for key in optional_keys)
-    assert all(getattr(controller, key) == value for key, value in default_values.items())
+    with pytest.raises(Exception):
+        _validate_config(test_config)
 
 
 @pytest.mark.parametrize(
@@ -148,3 +220,24 @@ def test_load_config_file(tmp_path, config_yaml):
 
     result = load_config_file(file_path)
     assert result == yaml.safe_load(io.StringIO(config_yaml))
+
+
+@mock.patch("juju_spell.config._validate_config")
+@mock.patch("juju_spell.config.merge_configs")
+@mock.patch("juju_spell.config.load_config_file")
+def test_load_config(mock_load_config_file, mock_merge_configs, mock_validate_config, tmp_path):
+    """Test load config."""
+    test_config_path = tmp_path / "config.yaml"
+    test_config_path.touch()
+    test_personal_config_path = tmp_path / "config.personal.yaml"
+    test_personal_config_path.touch()
+    exp_config = {"test": 1}
+    mock_load_config_file.return_value = exp_config
+
+    # testing the load_config function
+    config = load_config(test_config_path, test_personal_config_path)
+
+    mock_load_config_file.assert_has_calls([mock.call(test_config_path), mock.call(test_personal_config_path)])
+    mock_merge_configs.assert_called_once_with(exp_config, exp_config)
+    mock_validate_config.assert_called_once_with(mock_merge_configs.return_value)
+    assert config == mock_validate_config.return_value

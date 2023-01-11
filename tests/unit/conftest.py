@@ -12,9 +12,9 @@ controllers:
     uuid: c29e8cf7-9380-4d2f-91bb-ac4d9f26a60c
     customer: example_customer
     owner: Gandalf
-    description: some nice notes about controllers and models
+    description: some nice notes
     tags: ["test"]
-    risk: 5
+    risk: 3
     endpoint: 10.1.1.46:17070
     ca_cert: |
         -----BEGIN CERTIFICATE-----
@@ -63,9 +63,9 @@ controllers:
     uuid: c29e8cf7-9380-4d2f-91bb-ac4d9f26a60c
     customer: example_customer
     owner: Gandalf
-    description: some nice notes about controllers and models
+    description: some nice notes
     tags: ["test"]
-    risk: 5
+    risk: 3
     endpoint: 10.1.1.46:17070
     ca_cert: |
         -----BEGIN CERTIFICATE-----

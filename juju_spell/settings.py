@@ -13,3 +13,4 @@ CONFIG_PATH = os.environ.get(
 PERSONAL_CONFIG_PATH = os.environ.get(
     "JUJUSPELL_PERSONAL_CONFIG", pathlib.Path(JUJUSPELL_DATA / "config.personal.yaml")
 )
+JUJUSPELL_DEFAULT_PORT_RANGE = range(17071, 17170)
