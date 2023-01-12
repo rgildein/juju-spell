@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -25,14 +26,13 @@ class TestCMD(BaseCMD):
     help_msg = "Test command"
     overview = "Test command overview"
 
-    def execute(self, _) -> None:
-        """Test execution."""
-        pass
+    # define execute as MagicMock
+    execute = MagicMock()
 
 
 class TestJujuCommand(BaseJujuCommand):
-    async def execute(self, **kwargs) -> None:
-        pass
+    # define execute as AsyncMock
+    execute = AsyncMock()
 
 
 class TestBaseJujuCMD(BaseJujuCMD, TestCMD):
