@@ -20,7 +20,7 @@ def _is_port_free(port: int) -> bool:
     tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = tcp.connect_ex(("localhost", port))
     tcp.close()
-    return result == 0
+    return result != 0
 
 
 def get_free_tcp_port(port_range: range) -> int:

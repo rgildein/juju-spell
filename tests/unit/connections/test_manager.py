@@ -12,7 +12,7 @@ from juju_spell import config as juju_spell_config
 from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
 
 
-@pytest.mark.parametrize("return_code, exp_result", [(0, True), (1, False)])
+@pytest.mark.parametrize("return_code, exp_result", [(1, True), (0, False)])
 @mock.patch("juju_spell.connections.manager.socket.socket")
 def test_is_port_free(mock_socket, return_code, exp_result):
     """Test function checking if port is free."""
