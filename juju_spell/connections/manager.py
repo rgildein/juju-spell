@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from juju import juju
 
 from juju_spell.config import Controller
+from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
 
 logger = logging.getLogger(__name__)
 
@@ -156,14 +157,16 @@ class ConnectManager(object):
         """Return list of connections ."""
         return self._connections
 
-    async def _connect(self, controller_config: Controller, sshuttle: bool = False) -> juju.Controller:
+    async def _connect(
+        self, controller_config: Controller, port_range: range, sshuttle: bool = False
+    ) -> juju.Controller:
         """Prepare connection to Controller and return it."""
         logger.info("getting a new connection to controller %s", controller_config.name)
         controller = juju.Controller(max_frame_size=MAX_FRAME_SIZE)
         local_endpoint = None
         connection_process = None
         if controller_config.connection and not sshuttle:
-            port = get_free_tcp_port()
+            port = get_free_tcp_port(port_range)
             local_endpoint = f"localhost:{port}"
             connection_process = ssh_port_forwarding_proc(
                 local_endpoint,
@@ -202,7 +205,11 @@ class ConnectManager(object):
             logger.info("%s connection was closed", connection.controller.controller_uuid)
 
     async def get_controller(
-        self, controller_config: Controller, sshuttle: bool = False, reconnect: bool = False
+        self,
+        controller_config: Controller,
+        port_range: range = JUJUSPELL_DEFAULT_PORT_RANGE,
+        sshuttle: bool = False,
+        reconnect: bool = False,
     ) -> juju.Controller:
         """Get controller."""
         assert isinstance(controller_config, Controller), "Not supported format of controller config"
@@ -214,4 +221,4 @@ class ConnectManager(object):
         elif connection and reconnect:
             await connection.controller.disconnect()
 
-        return await self._connect(controller_config, sshuttle)
+        return await self._connect(controller_config, port_range, sshuttle)

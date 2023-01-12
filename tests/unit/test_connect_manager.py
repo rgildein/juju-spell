@@ -159,7 +159,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
     async def _test_connection(self, mock_controller, config, endpoint, **kwargs):
         """Help function to test connection."""
         mocked_controller = mock_controller.return_value = AsyncMock()
-        controller = await self.connect_manager._connect(config, **kwargs)
+        controller = await self.connect_manager._connect(config, range(17071, 17170), **kwargs)
 
         assert controller == mocked_controller
         mocked_controller.connect.assert_called_once_with(
@@ -240,7 +240,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
         controller = await self.connect_manager.get_controller(config, reconnect=False)
 
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_reconnect(self):
@@ -253,7 +253,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         controller = await self.connect_manager.get_controller(config, reconnect=True)
 
         mocked_connection.controller.disconnect.assert_called_once()
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_auto_reconnect(self):
@@ -267,7 +267,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
         controller = await self.connect_manager.get_controller(config, reconnect=False)
 
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_existing_controller(self):

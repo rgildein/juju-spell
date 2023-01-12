@@ -46,8 +46,9 @@ async def run_serial(config: Config, command: BaseJujuCommand, parsed_args: Name
         results(Dict): Controller dict with result.
     """
     results: RESULTS_TYPE = []
+    port_range = config.connection.get("port-range")
     for controller_config in config.controllers:
-        controller = await get_controller(controller_config)
+        controller = await get_controller(controller_config, port_range)
         logger.debug("%s running in serial", controller.controller_uuid)
         command_kwargs = vars(parsed_args)
         output = await command.run(controller=controller, **command_kwargs)
