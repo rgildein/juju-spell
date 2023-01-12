@@ -1,5 +1,6 @@
 import dataclasses
 import logging
+import random
 import socket
 import subprocess
 from typing import Dict, List, Optional
@@ -13,19 +14,29 @@ logger = logging.getLogger(__name__)
 MAX_FRAME_SIZE = 6**24
 
 
-def get_free_tcp_port() -> int:
-    """Get free TCP port.
+def _is_port_free(port: int) -> bool:
+    """Check if port is free to use."""
+    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = tcp.connect_ex(("localhost", port))
+    tcp.close()
+    return result == 0
+
+
+def get_free_tcp_port(port_range: range) -> int:
+    """Get free TCP port from range.
 
     This function will return free port on local system. This port will be used to port-forward remote controller
     to localhost:<port>.
     """
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp.bind(("", 0))
-    # TODO: we need to select a port from the predefined range
-    _, port = tcp.getsockname()
-    tcp.close()
-    logger.debug("free port %d was found", port)
-    return port
+    list_of_ports = list(port_range)
+    random.shuffle(list_of_ports)  # randomly shuffle list of ports
+
+    for port in list_of_ports:
+        if _is_port_free(port):
+            logger.debug("free port %d was found", port)
+            return port
+
+    raise ValueError(f"Could not find a free port in range {port_range}")
 
 
 def ssh_port_forwarding_proc(
