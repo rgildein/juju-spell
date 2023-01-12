@@ -4,23 +4,31 @@ import logging
 import os
 import sys
 
+import confuse
 from craft_cli import (
     ArgumentParsingError,
     CommandGroup,
     CraftError,
     Dispatcher,
     EmitterMode,
+    GlobalArgument,
     ProvideHelpException,
     emit,
 )
 
 from juju_spell import cli, utils
-from juju_spell.settings import APP_NAME, APP_VERSION
+from juju_spell.config import load_config
+from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 COMMAND_GROUPS = [
     CommandGroup("ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]),
     # CommandGroup("ReadWrite", []),
     CommandGroup("Other", [cli.VersionCMD]),
+]
+
+GLOBAL_ARGS = [
+    GlobalArgument("version", "flag", "-v", "--version", "Show the application version and exit"),
+    GlobalArgument("config", "option", "-c", "--config", "Set the path to custom config."),
 ]
 
 
@@ -70,7 +78,7 @@ def get_dispatcher() -> Dispatcher:
     logger.setLevel(logging.DEBUG)  # set root logger to debug level so that all messages are sent to Emitter
 
     emit.debug(f"verbosity is set to {verbosity}")
-    return Dispatcher(APP_NAME, COMMAND_GROUPS, summary="One juju to rule them all.")
+    return Dispatcher(APP_NAME, COMMAND_GROUPS, summary="One juju to rule them all.", extra_global_args=GLOBAL_ARGS)
 
 
 def exec_cmd() -> int:
@@ -79,8 +87,13 @@ def exec_cmd() -> int:
     return_code = 0
 
     try:
-        dispatcher.pre_parse_args(sys.argv[1:])
-        dispatcher.load_command(None)
+        global_args = dispatcher.pre_parse_args(sys.argv[1:])
+        if global_args.get("config"):
+            config = load_config(global_args["config"])
+        else:
+            config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
+
+        dispatcher.load_command(config)
         dispatcher.run()
     except ArgumentParsingError as error:
         print(error, file=sys.stderr)  # to stderr, as argparse normally does
@@ -90,6 +103,10 @@ def exec_cmd() -> int:
         print(error, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()
         return_code = 0
+    except confuse.exceptions.ConfigError as error:
+        print(f"error parsing configuration: `{error}`", file=sys.stderr)  # to stderr, as argparse normally does
+        emit.ended_ok()
+        return_code = 1
     except CraftError as err:
         emit.error(err)
         return_code = 1

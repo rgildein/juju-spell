@@ -264,12 +264,7 @@ def test_make_controller_filter(
         ),
     ],
 )
-def test_get_filtered_config(
-    mocker,
-    filter_expression,
-    controllers,
-    result_controllers,
-):
-    mocker.patch("juju_spell.filter.load_config", return_value=Config(controllers=controllers))
-    config = get_filtered_config(filter_expression=filter_expression)
+def test_get_filtered_config(filter_expression, controllers, result_controllers):
+    original_config = Config(controllers=controllers)
+    config = get_filtered_config(original_config, filter_expression)
     assert config == Config(controllers=result_controllers)

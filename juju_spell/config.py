@@ -165,10 +165,10 @@ def load_config_file(path):
     return source
 
 
-def load_config(config_path: Path, personal_config_path: Optional[Path]) -> Config:
+def load_config(config_path: Path, personal_config_path: Optional[Path] = None) -> Config:
     """Load ad validate yaml config file."""
     source = load_config_file(config_path)
-    if personal_config_path:
+    if personal_config_path and personal_config_path.exists():
         personal_source = load_config_file(personal_config_path)
         # Merge personal and default config
         source = merge_configs(source, personal_source)

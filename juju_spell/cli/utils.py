@@ -25,8 +25,7 @@ from typing import List
 from craft_cli import emit
 
 from juju_spell.cli.exceptions import Abort
-from juju_spell.config import Config
-from juju_spell.filter import FILTER_EXPRESSION_REGEX, get_filtered_config
+from juju_spell.filter import FILTER_EXPRESSION_REGEX
 
 visible_prompt_func: t.Callable[[str], str] = input
 
@@ -97,13 +96,9 @@ def parse_comma_separated_str(comma_separated_str: str) -> List[str]:
     return comma_separated_str.strip().split(",")
 
 
-def parse_filter(value: str) -> Config:
+def parse_filter(value: str) -> str:
     """Type check for argument filter."""
     if not (re.findall(FILTER_EXPRESSION_REGEX, value) or len(value) == 0):
         raise ArgumentTypeError(f"Argument filter format wrong: {value}")
 
-    filtered_config = get_filtered_config(value)
-    if len(filtered_config.controllers) <= 0:
-        raise ArgumentTypeError("No match controller")
-
-    return filtered_config
+    return value

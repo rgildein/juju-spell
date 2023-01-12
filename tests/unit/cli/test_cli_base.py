@@ -16,15 +16,13 @@
 """Tests for base cli functions."""
 import argparse
 import os
-from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
 from craft_cli import CraftError
 
-from juju_spell.config import Config, Controller
-from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
+from juju_spell.config import Controller
 
 
 def test_base_cmd_fill_parser(base_cmd):
@@ -32,13 +30,7 @@ def test_base_cmd_fill_parser(base_cmd):
     parser = MagicMock()
     base_cmd.fill_parser(parser)
 
-    parser.add_argument.assert_has_calls(
-        [
-            mock.call("--global-config", type=Path, default=CONFIG_PATH, help="global config file path"),
-            mock.call("--personal-config", type=Path, default=PERSONAL_CONFIG_PATH, help="personal config file path"),
-            mock.call("--silent", default=False, action="store_true", help="This will skip all the confirm check."),
-        ]
-    )
+    parser.assert_not_called()
 
 
 def test_base_cmd_run(base_cmd):
@@ -94,8 +86,6 @@ def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_fi
 
     parser.add_argument.assert_has_calls(
         [
-            mock.call("--global-config", type=Path, default=CONFIG_PATH, help="global config file path"),
-            mock.call("--personal-config", type=Path, default=PERSONAL_CONFIG_PATH, help="personal config file path"),
             mock.call("--silent", default=False, action="store_true", help="This will skip all the confirm check."),
             mock.call(
                 "--run-type",
@@ -119,21 +109,23 @@ def test_base_juju_cmd_fill_parser(mock_parse_comma_separated_str, mock_parse_fi
 @pytest.mark.asyncio
 @patch("juju_spell.cli.base.run", new_callable=MagicMock)
 @patch("juju_spell.cli.base.asyncio")
-async def test_base_juju_cmd_execute(mock_asyncio, _, base_juju_cmd):
+@patch("juju_spell.cli.base.get_filtered_config")
+async def test_base_juju_cmd_execute(mock_get_filtered_config, mock_asyncio, _, base_juju_cmd):
     """Test add additional CLI arguments with BaseJujuCMD."""
-    parsed_args = argparse.Namespace(**{"test": True})
+    parsed_args = argparse.Namespace(**{"filter": None})
     mock_asyncio.get_event_loop.return_value = loop = MagicMock()
 
     result = base_juju_cmd.execute(parsed_args)
 
+    mock_get_filtered_config.assert_called_once_with(base_juju_cmd.config, None)
     mock_asyncio.get_event_loop.assert_called_once()
     loop.run_until_complete.assert_called_once()
     assert result == loop.run_until_complete.return_value
 
 
-def test_base_juju_cmd_execute_execption(base_juju_cmd):
+def test_base_juju_cmd_execute_exception(base_juju_cmd):
     """Test add additional CLI arguments with BaseJujuCMD."""
-    parsed_args = argparse.Namespace(**{"test": True})
+    parsed_args = argparse.Namespace(**{"filter": None})
     base_juju_cmd.command = None
 
     with pytest.raises(RuntimeError):
@@ -153,23 +145,6 @@ def _create_test_controller(name: str) -> Controller:
         password="test-password",
         model_mapping={},
     )
-
-
-@pytest.mark.parametrize(
-    "parsed_args, exp_parsed_args",
-    [
-        ({"silent": False, "filter": Config([])}, {"silent": False, "filter": Config([])}),
-        (
-            {"silent": False, "filter": Config([_create_test_controller("test-1"), _create_test_controller("test-2")])},
-            {"silent": False, "filter": Config(["test-1", "test-2"])},
-        ),
-    ],
-)
-def test_juju_write_cmd_safe_parsed_args_output(parsed_args, exp_parsed_args, juju_write_cmd):
-    """Test removing sensitive information from output."""
-    parsed_args = argparse.Namespace(**parsed_args)
-    exp_parsed_args = argparse.Namespace(**exp_parsed_args)
-    assert juju_write_cmd.safe_parsed_args_output(parsed_args) == exp_parsed_args
 
 
 @pytest.mark.parametrize(
