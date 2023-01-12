@@ -3,7 +3,7 @@ import re
 import typing as t
 from dataclasses import asdict
 
-from juju_spell.settings import CONFIG_PATH
+from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 from .config import Config, Controller, load_config
 
@@ -38,7 +38,7 @@ def make_controllers_filter(filter_expression):
 
 
 def get_filtered_config(filter_expression: str) -> Config:
-    config = load_config(CONFIG_PATH)
+    config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
     if filter_expression == "":
         return config
     controller_filter = make_controllers_filter(filter_expression)

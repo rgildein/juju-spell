@@ -29,7 +29,7 @@ from craft_cli.dispatcher import _CustomArgumentParser
 from juju_spell.assignment.runner import run
 from juju_spell.cli.utils import confirm, parse_comma_separated_str, parse_filter
 from juju_spell.commands.base import BaseJujuCommand
-from juju_spell.settings import CONFIG_PATH
+from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 
 class BaseCMD(BaseCommand, metaclass=ABCMeta):
@@ -38,10 +38,16 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         """Define base arguments for commands."""
         parser.add_argument(
-            "--config",
+            "--global-config",
             type=Path,
             default=CONFIG_PATH,
-            help="config file path",
+            help="global config file path",
+        )
+        parser.add_argument(
+            "--personal-config",
+            type=Path,
+            default=PERSONAL_CONFIG_PATH,
+            help="personal config file path",
         )
         parser.add_argument(
             "--silent",

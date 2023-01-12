@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from juju_spell import config as juju_spell_config
-from tests.unit.conftest import TEST_CONFIG
+from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
 
 
 @mock.patch("juju_spell.connections.manager.socket.socket")
@@ -105,7 +105,10 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         connect_manager._manager = None  # restart connect_manager
         self.connect_manager = ConnectManager()
         # `@pytest.mark.usefixtures("controller_config")` do not work with `IsolatedAsyncioTestCase`
-        config = yaml.safe_load(io.StringIO(TEST_CONFIG))
+        config = juju_spell_config.merge_configs(
+            yaml.safe_load(io.StringIO(TEST_CONFIG)),
+            yaml.safe_load(io.StringIO(TEST_PERSONAL_CONFIG)),
+        )
         config["controllers"][0]["connection"] = juju_spell_config.Connection(**config["controllers"][0]["connection"])
         self.controller_config_1 = juju_spell_config.Controller(**config["controllers"][0])  # with connection
         self.controller_config_2 = juju_spell_config.Controller(**config["controllers"][1])  # without connection

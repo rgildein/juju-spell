@@ -13,6 +13,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             "name=controller-a",
             [
                 Controller(
+                    uuid="fc51ceb1-1fec-41b7-a7b0-5f7eee6d06dc",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -26,6 +27,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     },
                 ),
                 Controller(
+                    uuid="223eb7a5-7910-475f-a3f7-1c972a12f186",
                     name="controller-b",
                     customer="customer-a",
                     owner="owner-a",
@@ -41,6 +43,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             ],
             [
                 Controller(
+                    uuid="fc51ceb1-1fec-41b7-a7b0-5f7eee6d06dc",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -59,6 +62,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             "name=controller-not-exists",
             [
                 Controller(
+                    uuid="fc51ceb1-1fec-41b7-a7b0-5f7eee6d06dc",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -72,6 +76,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     },
                 ),
                 Controller(
+                    uuid="41a5a12a-d357-485e-9910-2e84d90e1255",
                     name="controller-b",
                     customer="customer-a",
                     owner="owner-a",
@@ -91,6 +96,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             "username=admin customer=customer-a",
             [
                 Controller(
+                    uuid="44575f56-5591-4eb5-b7a5-df890a9518de",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -104,6 +110,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     },
                 ),
                 Controller(
+                    uuid="2cdff9e0-200f-41a0-a43f-2b21d0cd4484",
                     name="controller-b",
                     customer="customer-a",
                     owner="owner-a",
@@ -119,6 +126,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             ],
             [
                 Controller(
+                    uuid="44575f56-5591-4eb5-b7a5-df890a9518de",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -132,6 +140,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     },
                 ),
                 Controller(
+                    uuid="2cdff9e0-200f-41a0-a43f-2b21d0cd4484",
                     name="controller-b",
                     customer="customer-a",
                     owner="owner-a",
@@ -150,6 +159,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             "tags=a,b,c",
             [
                 Controller(
+                    uuid="a2ef8af6-9a6e-4a20-82dd-3cca327936c2",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -166,6 +176,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
             ],
             [
                 Controller(
+                    uuid="a2ef8af6-9a6e-4a20-82dd-3cca327936c2",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -206,6 +217,7 @@ def test_make_controller_filter(
             "name=controller-a",
             [
                 Controller(
+                    uuid="989dd4d6-c778-467a-95c9-11823dde0dbe",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",
@@ -219,6 +231,7 @@ def test_make_controller_filter(
                     },
                 ),
                 Controller(
+                    uuid="19a43de8-4c3b-44c4-aeb5-e03efc4ccefc",
                     name="controller-b",
                     customer="customer-a",
                     owner="owner-a",
@@ -234,6 +247,7 @@ def test_make_controller_filter(
             ],
             [
                 Controller(
+                    uuid="989dd4d6-c778-467a-95c9-11823dde0dbe",
                     name="controller-a",
                     customer="customer-a",
                     owner="owner-a",

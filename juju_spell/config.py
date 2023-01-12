@@ -2,12 +2,15 @@
 import dataclasses
 import logging
 import re
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import confuse
 import yaml
 from confuse import RootView
+
+from juju_spell.utils import merge_list_of_dict_by_key
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +80,7 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
         "controllers": confuse.Sequence(
             ControllerDict(
                 {
+                    "uuid": String(UUID_REGEX, "Invalid uuid definition"),
                     "name": str,
                     "customer": str,
                     "owner": str,
@@ -122,6 +126,9 @@ class Connection:
 
 @dataclasses.dataclass
 class Controller:
+    """Juju Controller."""
+
+    uuid: uuid.UUID
     name: str
     customer: str
     owner: str
@@ -142,17 +149,33 @@ class Config:
     controllers: List[Controller]
 
 
-def load_config(path: Path) -> Config:
-    """Load ad validate yaml config file."""
-    logger.debug("loading configuration %s file", path)
+def merge_configs(config: Dict, personal_config: Dict):
+    # Merge personal and global config
+    config["controllers"] = merge_list_of_dict_by_key(
+        key="uuid",
+        lists=[config["controllers"], personal_config["controllers"]],
+    )
+    return config
+
+
+def load_config_file(path):
     with open(path, "r") as file:
         source = yaml.safe_load(file)
         logger.info("load config file from %s path", path)
+    return source
+
+
+def load_config(config_path: Path, personal_config_path: Optional[Path]) -> Config:
+    """Load ad validate yaml config file."""
+    source = load_config_file(config_path)
+    if personal_config_path:
+        personal_source = load_config_file(personal_config_path)
+        # Merge personal and default config
+        source = merge_configs(source, personal_source)
 
     # use confuse library only for validation
     _config = RootView([source])
     valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
     logger.info("config was validated")
     config = Config(**valid_config)
-
     return config
