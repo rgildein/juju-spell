@@ -27,7 +27,6 @@ from craft_cli.dispatcher import _CustomArgumentParser
 from juju_spell.cli.base import BaseJujuCMD
 from juju_spell.commands.add_user import AddUserCommand
 from juju_spell.settings import PERSONAL_CONFIG_PATH
-from juju_spell.utils import random_password
 
 
 class AddUserCMD(BaseJujuCMD):
@@ -37,6 +36,16 @@ class AddUserCMD(BaseJujuCMD):
     help_msg = "add juju user to remote controller"
     overview = textwrap.dedent(
         """
+        The command will create user on controller with random_password or gived password
+        and print the yaml config to stdout.
+
+        Example:
+        $ juju_spell add-user --username newuser
+
+        controllers:
+            - uuid: 74ef132a-6c96-48db-808c-76e8396f4feb
+              username: newuser
+              password: "{random_password}"
         """
     )
 
@@ -53,7 +62,7 @@ class AddUserCMD(BaseJujuCMD):
         parser.add_argument(
             "--display_name",
             type=str,
-            help=("display_name to create." " If display_name is None then it will be set as username"),
+            help=("display_name to create. If display_name is None then it will be set as username"),
             required=False,
         )
         parser.add_argument(
@@ -68,14 +77,35 @@ class AddUserCMD(BaseJujuCMD):
         """Run before execution."""
         super().before(parsed_args=parsed_args)
         parsed_args.password = getpass("Password(If empty will use random password): ")
-        if len(parsed_args.password) == 0:
-            parsed_args.password = random_password()
         if not parsed_args.display_name:
             parsed_args.display_name = parsed_args.username
 
     @staticmethod
     def format_output(retval: Any) -> str:
-        """Pretty formatter for output."""
+        """Pretty formatter for output.
+
+        Notes:
+            - The first element of retval, which is a list, is a list of controllers' output. The example:
+
+            retval = [
+                [
+                    {
+                        "output": output
+                        "context": {
+                            "name": controller_config.name,
+                            "customer": controller_config.customer,
+                        },
+                    },
+                    {
+                        "output": output
+                        "context": {
+                            "name": controller_config.name,
+                            "customer": controller_config.customer,
+                        },
+                    },
+                ]
+            ]
+        """
         emit.debug(f"formatting `{retval}`")
 
         output = {"controllers": []}

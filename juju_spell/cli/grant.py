@@ -22,11 +22,16 @@ from juju_spell.commands.grant import ACL_CHOICES, GrantCommand
 
 
 class GrantCMD(JujuWriteCMD):
+    """Grant command."""
 
     name = "grant"
     help_msg = "add juju user to remote controller"
     overview = textwrap.dedent(
         """
+        The command will set access level of user to controller.
+
+        Example:
+        $ juju_spell grant --username user-abc
         """
     )
 
