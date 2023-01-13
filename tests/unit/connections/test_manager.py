@@ -12,21 +12,49 @@ from juju_spell import config as juju_spell_config
 from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
 
 
+@pytest.mark.parametrize("return_code, exp_result", [(1, True), (0, False)])
 @mock.patch("juju_spell.connections.manager.socket.socket")
-def test_get_free_tcp_port(mock_socket):
+def test_is_port_free(mock_socket, return_code, exp_result):
+    """Test function checking if port is free."""
+    from juju_spell.connections.manager import _is_port_free
+
+    test_port = 17070
+    mock_socket.return_value = tcp = MagicMock()
+    tcp.connect_ex.return_value = return_code
+
+    result = _is_port_free(test_port)
+
+    assert result == exp_result
+    mock_socket.assert_called_once_with(socket.AF_INET, socket.SOCK_STREAM)
+    tcp.connect_ex.assert_called_once_with(("localhost", test_port))
+    tcp.close.assert_called_once()
+
+
+@mock.patch("juju_spell.connections.manager._is_port_free")
+@mock.patch("juju_spell.connections.manager.random.shuffle")
+def test_get_free_tcp_port(mock_random_shuffle, mock_is_port_free):
     """Test getting free TCP port."""
     from juju_spell.connections.manager import get_free_tcp_port
 
-    exp_port = 1999
-    mock_socket.return_value = mock_tcp = MagicMock()
-    mock_tcp.getsockname.return_value = (None, exp_port)
-    port = get_free_tcp_port()
+    exp_port = 17073
+    mock_is_port_free.side_effect = [False, False, True, False]
 
-    mock_socket.assert_called_once_with(socket.AF_INET, socket.SOCK_STREAM)
-    mock_tcp.bind.assert_called_once_with(("", 0))
-    mock_tcp.getsockname.assert_called_once()
-    mock_tcp.close.assert_called_once()
+    port = get_free_tcp_port(range(17071, 17075))
+
+    mock_random_shuffle.assert_called_once_with([17071, 17072, 17073, 17074])
+    mock_is_port_free.assert_has_calls([mock.call(17071), mock.call(17072), mock.call(17073)])
     assert port == exp_port
+
+
+@mock.patch("juju_spell.connections.manager._is_port_free")
+def test_get_free_tcp_port_exception(mock_is_port_free):
+    """Test getting free TCP port raising an Error."""
+    from juju_spell.connections.manager import get_free_tcp_port
+
+    mock_is_port_free.return_value = False
+
+    with pytest.raises(ValueError):
+        get_free_tcp_port(range(17071, 17075))
 
 
 @pytest.mark.parametrize(
@@ -131,7 +159,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
     async def _test_connection(self, mock_controller, config, endpoint, **kwargs):
         """Help function to test connection."""
         mocked_controller = mock_controller.return_value = AsyncMock()
-        controller = await self.connect_manager._connect(config, **kwargs)
+        controller = await self.connect_manager._connect(config, range(17071, 17170), **kwargs)
 
         assert controller == mocked_controller
         mocked_controller.connect.assert_called_once_with(
@@ -212,7 +240,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
         controller = await self.connect_manager.get_controller(config, reconnect=False)
 
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_reconnect(self):
@@ -225,7 +253,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         controller = await self.connect_manager.get_controller(config, reconnect=True)
 
         mocked_connection.controller.disconnect.assert_called_once()
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_auto_reconnect(self):
@@ -239,7 +267,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
         controller = await self.connect_manager.get_controller(config, reconnect=False)
 
-        mock_connect.assert_called_once_with(config, False)
+        mock_connect.assert_called_once_with(config, range(17071, 17170), False)
         assert controller == mock_connect.return_value
 
     async def test_get_controller_existing_controller(self):

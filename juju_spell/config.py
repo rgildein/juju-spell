@@ -10,6 +10,7 @@ import confuse
 import yaml
 from confuse import RootView
 
+from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
 from juju_spell.utils import merge_list_of_dict_by_key
 
 logger = logging.getLogger(__name__)
@@ -38,14 +39,19 @@ DESTINATION_REGEX = (
     r"localhost|"  # localhost
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$"  # IP
 )
+PORT_RANGE = (
+    r"^((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))"
+    r":"  # delimiter
+    r"((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$"
+)
 
 
 class String(confuse.Template):
     """A template used to validate string with regex and provide custom error."""
 
-    def __init__(self, pattern: str, message: str):
+    def __init__(self, pattern: str, message: str, default: Optional[str] = None):
         """Initialize the String object."""
-        super(String, self).__init__()
+        super(String, self).__init__(default=default)
         self._regex = re.compile(pattern)
         self._message = message
 
@@ -55,6 +61,16 @@ class String(confuse.Template):
             return value
 
         self.fail(self._message, view, True)
+
+
+class PortRange(String):
+    """A template specific for port range."""
+
+    def convert(self, value: Any, view: confuse.ConfigView) -> range:
+        """Check and convert port-range string to tuple."""
+        value = super().convert(value, view)
+        start_port, end_port = value.split(":")
+        return range(int(start_port), int(end_port))
 
 
 class ControllerDict(confuse.MappingTemplate):
@@ -77,6 +93,13 @@ class ConnectionDict(confuse.MappingTemplate):
 
 JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
     {
+        "connection": confuse.MappingTemplate(
+            {
+                "port-range": confuse.Optional(
+                    PortRange(PORT_RANGE, "Invalid port-range definition", default=JUJUSPELL_DEFAULT_PORT_RANGE)
+                ),
+            }
+        ),
         "controllers": confuse.Sequence(
             ControllerDict(
                 {
@@ -147,6 +170,19 @@ class Controller:
 @dataclasses.dataclass
 class Config:
     controllers: List[Controller]
+    connection: Optional[Dict[str, Any]] = None
+
+
+def _validate_config(source: Dict[str, Any]) -> Config:
+    """Validate config.
+
+    Using confuse library to validate config.
+    """
+    _config = RootView([source])
+    valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
+    logger.info("config was validated")
+    config = Config(**valid_config)
+    return config
 
 
 def merge_configs(config: Dict, personal_config: Dict):
@@ -173,9 +209,5 @@ def load_config(config_path: Path, personal_config_path: Optional[Path] = None) 
         # Merge personal and default config
         source = merge_configs(source, personal_source)
 
-    # use confuse library only for validation
-    _config = RootView([source])
-    valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
-    logger.info("config was validated")
-    config = Config(**valid_config)
+    config = _validate_config(source)
     return config
