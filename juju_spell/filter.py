@@ -3,9 +3,7 @@ import re
 import typing as t
 from dataclasses import asdict
 
-from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
-
-from .config import Config, Controller, load_config
+from .config import Config, Controller
 
 # --filter "a=v1,v2,v3 b=v4,v5,v6"
 FILTER_EXPRESSION_REGEX = r"([^=]+)=([^=]+)(?:\s|$)"
@@ -37,10 +35,13 @@ def make_controllers_filter(filter_expression):
     return filter
 
 
-def get_filtered_config(filter_expression: str) -> Config:
-    config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
+def get_filtered_config(config: Config, filter_expression: str) -> Config:
     if filter_expression == "":
         return config
+
     controller_filter = make_controllers_filter(filter_expression)
     config.controllers = list(filter(controller_filter, config.controllers))
+    if len(config.controllers) <= 0:
+        raise ValueError("No match controller")
+
     return config

@@ -17,10 +17,8 @@
 """JujuSpell base cli command."""
 import argparse
 import asyncio
-import copy
 import json
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
 from typing import Any, Optional
 
 from craft_cli import BaseCommand, CraftError, emit
@@ -29,32 +27,16 @@ from craft_cli.dispatcher import _CustomArgumentParser
 from juju_spell.assignment.runner import run
 from juju_spell.cli.utils import confirm, parse_comma_separated_str, parse_filter
 from juju_spell.commands.base import BaseJujuCommand
-from juju_spell.settings import CONFIG_PATH, PERSONAL_CONFIG_PATH
+from juju_spell.config import Config
+from juju_spell.filter import get_filtered_config
 
 
 class BaseCMD(BaseCommand, metaclass=ABCMeta):
     """Base CLI command for handling contexts."""
 
-    def fill_parser(self, parser: _CustomArgumentParser) -> None:
-        """Define base arguments for commands."""
-        parser.add_argument(
-            "--global-config",
-            type=Path,
-            default=CONFIG_PATH,
-            help="global config file path",
-        )
-        parser.add_argument(
-            "--personal-config",
-            type=Path,
-            default=PERSONAL_CONFIG_PATH,
-            help="personal config file path",
-        )
-        parser.add_argument(
-            "--silent",
-            default=False,
-            action="store_true",
-            help="This will skip all the confirm check.",
-        )
+    def __init__(self, config: Optional[Config]) -> None:
+        """Initialize BaseCMD."""
+        super().__init__(config)
 
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command.
@@ -116,6 +98,12 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
         """
         super().fill_parser(parser)
         parser.add_argument(
+            "--silent",
+            default=False,
+            action="store_true",
+            help="This will skip all the confirm check.",
+        )
+        parser.add_argument(
             "--run-type",
             type=str,
             choices=["parallel", "batch", "serial"],
@@ -140,8 +128,9 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
         if self.command is None or not issubclass(self.command, BaseJujuCommand):
             raise RuntimeError(f"command `{self.command}` is incorrect")
 
+        filtered_config = get_filtered_config(self.config, parsed_args.filter)
         loop = asyncio.get_event_loop()  # TODO: optionally new event loop, it's needed ???
-        task = loop.create_task(run(self.command(), parsed_args))
+        task = loop.create_task(run(filtered_config, self.command(), parsed_args))
         return loop.run_until_complete(asyncio.gather(task))
 
 
@@ -152,18 +141,9 @@ class JujuReadCMD(BaseJujuCMD, metaclass=ABCMeta):
 class JujuWriteCMD(BaseJujuCMD, metaclass=ABCMeta):
     """Base CLI command for handling Juju commands with write access."""
 
-    @staticmethod
-    def safe_parsed_args_output(parsed_args: argparse.Namespace) -> argparse.Namespace:
-        """Remove sensitive information from output."""
-        tmp_parsed_args = copy.deepcopy(parsed_args)
-        tmp_parsed_args.filter.controllers = [controller.name for controller in parsed_args.filter.controllers]
-        return tmp_parsed_args
-
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command for JujuCommands."""
-        if not parsed_args.silent and not confirm(
-            text=f"Continue on cmd: {self.name} parsed_args: {self.safe_parsed_args_output(parsed_args)}"
-        ):
+        if not parsed_args.silent and not confirm(text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}"):
             return 0
 
         return super().run(parsed_args)

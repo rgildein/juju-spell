@@ -11,7 +11,7 @@ from argparse import Namespace
 from typing import Any, Dict, List
 
 from juju_spell.commands.base import BaseJujuCommand
-from juju_spell.config import Controller
+from juju_spell.config import Config, Controller
 from juju_spell.connections import connect_manager, get_controller
 
 logger = logging.getLogger(__name__)
@@ -31,21 +31,22 @@ def get_result(controller_config: Controller, output: Any) -> RESULT_TYPE:
     }
 
 
-async def run_parallel(command: BaseJujuCommand, parsed_args: Namespace):
+async def run_parallel(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
     pass
 
 
-async def run_serial(command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
+async def run_serial(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
     """Run controller target command serially.
 
     Parameters:
+        config(Config): application configuration
         command(BaseJujuCommand): command to run
         parsed_args(Namespace): Namespace from CLI
     Returns:
         results(Dict): Controller dict with result.
     """
     results: RESULTS_TYPE = []
-    for controller_config in parsed_args.filter.controllers:
+    for controller_config in config.controllers:
         controller = await get_controller(controller_config)
         logger.debug("%s running in serial", controller.controller_uuid)
         command_kwargs = vars(parsed_args)
@@ -55,19 +56,19 @@ async def run_serial(command: BaseJujuCommand, parsed_args: Namespace) -> RESULT
     return results
 
 
-async def run_batch(command: BaseJujuCommand, parsed_args: Namespace):
+async def run_batch(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
     pass
 
 
-async def run(command: BaseJujuCommand, parsed_args: Namespace):
+async def run(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
     try:
         run_type = parsed_args.run_type
         logger.info("running with run_type: %s", run_type)
         if run_type == "parallel":
-            return await run_parallel(command, parsed_args)
+            return await run_parallel(config, command, parsed_args)
         if run_type == "batch":
-            return await run_batch(command, parsed_args)
+            return await run_batch(config, command, parsed_args)
 
-        return await run_serial(command, parsed_args)
+        return await run_serial(config, command, parsed_args)
     finally:
         await connect_manager.clean()
