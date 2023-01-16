@@ -15,13 +15,17 @@ import pytest
         (["model1", "model2", "model3"], None, ["model1", "model2", "model3"]),
     ],
 )
-async def test_get_filtered_models(all_models, args_models, exp_models, test_juju_command):
+async def test_get_filtered_models(
+    all_models, args_models, exp_models, test_juju_command
+):
     """Test async models generator."""
     mock_controller = AsyncMock()
     mock_controller.get_models.return_value = all_models
     mock_controller.get_model.return_value = mock_model = AsyncMock()
 
-    models_generator = test_juju_command.get_filtered_models(mock_controller, args_models)
+    models_generator = test_juju_command.get_filtered_models(
+        mock_controller, args_models
+    )
     models = [name async for name, _ in models_generator]
 
     # check returned models

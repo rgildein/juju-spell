@@ -28,7 +28,9 @@ def make_controllers_filter(filter_expression):
             target_val: t.Union[t.List[str], str] = controller_asdict.get(key)
             if key == "tags" and len(set(target_val) & set(values)) <= 0:
                 return False
-            if isinstance(target_val, str) and asdict(controller).get(key) not in values.split(","):
+            if isinstance(target_val, str) and asdict(controller).get(
+                key
+            ) not in values.split(","):
                 return False
         return True
 

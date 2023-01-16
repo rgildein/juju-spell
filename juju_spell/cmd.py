@@ -21,14 +21,20 @@ from juju_spell.config import load_config
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 COMMAND_GROUPS = [
-    CommandGroup("ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]),
+    CommandGroup(
+        "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
+    ),
     CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
     CommandGroup("Other", [cli.VersionCMD]),
 ]
 
 GLOBAL_ARGS = [
-    GlobalArgument("version", "flag", "-v", "--version", "Show the application version and exit"),
-    GlobalArgument("config", "option", "-c", "--config", "Set the path to custom config."),
+    GlobalArgument(
+        "version", "flag", "-v", "--version", "Show the application version and exit"
+    ),
+    GlobalArgument(
+        "config", "option", "-c", "--config", "Set the path to custom config."
+    ),
 ]
 
 
@@ -56,7 +62,9 @@ def get_verbosity() -> EmitterMode:
         try:
             verbosity = EmitterMode[verbosity_env.strip().upper()]
         except KeyError:
-            values = utils.humanize_list([e.name.lower() for e in EmitterMode], "and", sort=False)
+            values = utils.humanize_list(
+                [e.name.lower() for e in EmitterMode], "and", sort=False
+            )
             raise ArgumentParsingError(
                 f"cannot parse verbosity level {verbosity_env!r} from environment "
                 f"variable SNAPCRAFT_VERBOSITY_LEVEL (valid values are {values})"
@@ -75,10 +83,17 @@ def get_dispatcher() -> Dispatcher:
 
     # configure logging
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)  # set root logger to debug level so that all messages are sent to Emitter
+    logger.setLevel(
+        logging.DEBUG
+    )  # set root logger to debug level so that all messages are sent to Emitter
 
     emit.debug(f"verbosity is set to {verbosity}")
-    return Dispatcher(APP_NAME, COMMAND_GROUPS, summary="One juju to rule them all.", extra_global_args=GLOBAL_ARGS)
+    return Dispatcher(
+        APP_NAME,
+        COMMAND_GROUPS,
+        summary="One juju to rule them all.",
+        extra_global_args=GLOBAL_ARGS,
+    )
 
 
 def exec_cmd() -> int:
@@ -104,7 +119,9 @@ def exec_cmd() -> int:
         emit.ended_ok()
         return_code = 0
     except confuse.exceptions.ConfigError as error:
-        print(f"error parsing configuration: `{error}`", file=sys.stderr)  # to stderr, as argparse normally does
+        print(
+            f"error parsing configuration: `{error}`", file=sys.stderr
+        )  # to stderr, as argparse normally does
         emit.ended_ok()
         return_code = 1
     except CraftError as err:

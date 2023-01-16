@@ -16,7 +16,10 @@ def _get_mocked_controller(connected: bool) -> AsyncMock:
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "controller, exp_result",
-    [(_get_mocked_controller(True), "accessible"), (_get_mocked_controller(False), "unreachable")],
+    [
+        (_get_mocked_controller(True), "accessible"),
+        (_get_mocked_controller(False), "unreachable"),
+    ],
 )
 async def test_ping_execute(controller, exp_result):
     """Test execute function for PingCommand."""

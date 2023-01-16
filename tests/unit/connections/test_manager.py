@@ -42,7 +42,9 @@ def test_get_free_tcp_port(mock_random_shuffle, mock_is_port_free):
     port = get_free_tcp_port(range(17071, 17075))
 
     mock_random_shuffle.assert_called_once_with([17071, 17072, 17073, 17074])
-    mock_is_port_free.assert_has_calls([mock.call(17071), mock.call(17072), mock.call(17073)])
+    mock_is_port_free.assert_has_calls(
+        [mock.call(17071), mock.call(17072), mock.call(17073)]
+    )
     assert port == exp_port
 
 
@@ -66,7 +68,8 @@ def test_get_free_tcp_port_exception(mock_is_port_free):
         ),
         (
             ("localhost:1234", "10.1.1.99:17070", "bastion", ["bastion1", "bastion2"]),
-            ["ssh", "bastion", "-N", "-L", "localhost:1234:10.1.1.99:17070", "-J bastion1 -J bastion2"],
+            ["ssh", "bastion", "-N", "-L", "localhost:1234:10.1.1.99:17070",
+             "-J bastion1 -J bastion2"],
         ),
         (
             ("1234", "10.1.1.99:17070", "ubuntu@bastion"),
@@ -80,7 +83,9 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
     from juju_spell.connections.manager import ssh_port_forwarding_proc
 
     ssh_port_forwarding_proc(*args)
-    mock_popen.assert_called_once_with(exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    mock_popen.assert_called_once_with(exp_cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
 
 
 @pytest.mark.parametrize(
@@ -89,7 +94,8 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
         ((["10.1.1.0/24"], "bastion"), ["sshuttle", "10.1.1.0/24", "-r", "bastion"]),
         (
             (["10.1.1.0/24"], "bastion", ["bastion1", "bastion2"]),
-            ["sshuttle", "10.1.1.0/24", "-r", "bastion", "-e 'ssh -J bastion1 -J bastion2'"],
+            ["sshuttle", "10.1.1.0/24", "-r", "bastion",
+             "-e 'ssh -J bastion1 -J bastion2'"],
         ),
         (
             (["10.1.1.0/24", "20.1.1.0/24"], "ubuntu@bastion"),
@@ -103,7 +109,19 @@ def test_sshuttle_proc(mock_popen, args, exp_cmd):
     from juju_spell.connections.manager import sshuttle_proc
 
     sshuttle_proc(*args)
-    mock_popen.assert_called_once_with(exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    mock_popen.assert_called_once_with(exp_cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+
+@mock.patch("juju_spell.connections.manager.subprocess.Popen")
+def test_sshuttle_proc(mock_popen, args, exp_cmd):
+    """Test create sshuttle connection."""
+    from juju_spell.connections.manager import sshuttle_proc
+
+    sshuttle_proc(*args)
+    mock_popen.assert_called_once_with(
+        exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
 
 
 @mock.patch("juju_spell.connections.connect_manager")
@@ -132,14 +150,21 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
 
         connect_manager._manager = None  # restart connect_manager
         self.connect_manager = ConnectManager()
-        # `@pytest.mark.usefixtures("controller_config")` do not work with `IsolatedAsyncioTestCase`
+        # `@pytest.mark.usefixtures("controller_config")`
+        # do not work with `IsolatedAsyncioTestCase`
         config = juju_spell_config.merge_configs(
             yaml.safe_load(io.StringIO(TEST_CONFIG)),
             yaml.safe_load(io.StringIO(TEST_PERSONAL_CONFIG)),
         )
-        config["controllers"][0]["connection"] = juju_spell_config.Connection(**config["controllers"][0]["connection"])
-        self.controller_config_1 = juju_spell_config.Controller(**config["controllers"][0])  # with connection
-        self.controller_config_2 = juju_spell_config.Controller(**config["controllers"][1])  # without connection
+        config["controllers"][0]["connection"] = juju_spell_config.Connection(
+            **config["controllers"][0]["connection"]
+        )
+        self.controller_config_1 = juju_spell_config.Controller(
+            **config["controllers"][0]
+        )  # with connection
+        self.controller_config_2 = juju_spell_config.Controller(
+            **config["controllers"][1]
+        )  # without connection
 
     def tearDown(self) -> None:
         """Clean up after tests."""
@@ -159,7 +184,9 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
     async def _test_connection(self, mock_controller, config, endpoint, **kwargs):
         """Help function to test connection."""
         mocked_controller = mock_controller.return_value = AsyncMock()
-        controller = await self.connect_manager._connect(config, range(17071, 17170), **kwargs)
+        controller = await self.connect_manager._connect(
+            config, range(17071, 17170), **kwargs
+        )
 
         assert controller == mocked_controller
         mocked_controller.connect.assert_called_once_with(
@@ -179,7 +206,9 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
     @mock.patch("juju_spell.connections.manager.ssh_port_forwarding_proc")
     @mock.patch("juju_spell.connections.manager.get_free_tcp_port", return_value=17070)
     @mock.patch("juju_spell.connections.manager.juju.Controller")
-    async def test_connect_ssh_tunel(self, mock_controller, mock_get_free_tcp_port, mock_ssh_port_forwarding_proc):
+    async def test_connect_ssh_tunel(
+        self, mock_controller, mock_get_free_tcp_port, mock_ssh_port_forwarding_proc
+    ):
         """Test connection with ssh tunnel."""
         config = self.controller_config_1
 
@@ -198,7 +227,9 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         """Test connection with sshuttle."""
         config = self.controller_config_1
 
-        await self._test_connection(mock_controller, config, config.endpoint, sshuttle=True)
+        await self._test_connection(
+            mock_controller, config, config.endpoint, sshuttle=True
+        )
         mock_sshuttle_proc.assert_called_once_with(
             config.connection.subnets,
             config.connection.destination,
