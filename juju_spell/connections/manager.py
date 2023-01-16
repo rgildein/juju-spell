@@ -64,10 +64,11 @@ def ssh_port_forwarding_proc(
                   destination
     """
     logger.info("port forwarding %s to %s via %s", remote_target, local_target, destination)
-    jumps = jumps or []
-    jumps_option = " ".join(f"-J {jump}" for jump in jumps)
+    cmd = ["ssh", destination, "-N", "-L", f"{local_target}:{remote_target}"]
+    if jumps:
+        # add jumps options
+        cmd.append(" ".join(f"-J {jump}" for jump in jumps))
 
-    cmd = ["ssh", "-N", "-L", f"{local_target}:{remote_target}", jumps_option, destination]
     logger.debug("cmd `%s` will be executed", cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc
@@ -95,11 +96,11 @@ def sshuttle_proc(subnets: List[str], destination: str, jumps: Optional[List[str
                   destination
     """
     logger.info("sshuttle %s subnets via %s", subnets, destination)
-    jumps = jumps or []
-    jumps_option = " ".join(f"-J {jump}" for jump in jumps)
-    extra_options = "" if not jumps else f"-e 'ssh {jumps_option}'"
+    cmd = ["sshuttle", *subnets, "-r", destination]
+    if jumps:
+        jumps_option = " ".join(f"-J {jump}" for jump in jumps)
+        cmd.append(f"-e 'ssh {jumps_option}'")
 
-    cmd = ["sshuttle", "-r", destination, extra_options, *subnets]
     logger.debug("cmd `%s` will be executed", cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc

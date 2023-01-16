@@ -62,15 +62,15 @@ def test_get_free_tcp_port_exception(mock_is_port_free):
     [
         (
             ("localhost:1234", "10.1.1.99:17070", "bastion"),
-            ["ssh", "-N", "-L", "localhost:1234:10.1.1.99:17070", "", "bastion"],
+            ["ssh", "bastion", "-N", "-L", "localhost:1234:10.1.1.99:17070"],
         ),
         (
             ("localhost:1234", "10.1.1.99:17070", "bastion", ["bastion1", "bastion2"]),
-            ["ssh", "-N", "-L", "localhost:1234:10.1.1.99:17070", "-J bastion1 -J bastion2", "bastion"],
+            ["ssh", "bastion", "-N", "-L", "localhost:1234:10.1.1.99:17070", "-J bastion1 -J bastion2"],
         ),
         (
             ("1234", "10.1.1.99:17070", "ubuntu@bastion"),
-            ["ssh", "-N", "-L", "1234:10.1.1.99:17070", "", "ubuntu@bastion"],
+            ["ssh", "ubuntu@bastion", "-N", "-L", "1234:10.1.1.99:17070"],
         ),
     ],
 )
@@ -86,14 +86,14 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
 @pytest.mark.parametrize(
     "args, exp_cmd",
     [
-        ((["10.1.1.0/24"], "bastion"), ["sshuttle", "-r", "bastion", "", "10.1.1.0/24"]),
+        ((["10.1.1.0/24"], "bastion"), ["sshuttle", "10.1.1.0/24", "-r", "bastion"]),
         (
             (["10.1.1.0/24"], "bastion", ["bastion1", "bastion2"]),
-            ["sshuttle", "-r", "bastion", "-e 'ssh -J bastion1 -J bastion2'", "10.1.1.0/24"],
+            ["sshuttle", "10.1.1.0/24", "-r", "bastion", "-e 'ssh -J bastion1 -J bastion2'"],
         ),
         (
             (["10.1.1.0/24", "20.1.1.0/24"], "ubuntu@bastion"),
-            ["sshuttle", "-r", "ubuntu@bastion", "", "10.1.1.0/24", "20.1.1.0/24"],
+            ["sshuttle", "10.1.1.0/24", "20.1.1.0/24", "-r", "ubuntu@bastion"],
         ),
     ],
 )
