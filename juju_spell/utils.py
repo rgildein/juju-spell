@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Utilities for JujuSpell."""
+import secrets
 from collections import defaultdict
 from typing import Dict, Iterable, List
 
@@ -90,3 +91,8 @@ def merge_list_of_dict_by_key(key: str, lists: List[List[Dict]]):
         for elem in _list:
             new_dict[elem[key]].update(elem)
     return list(new_dict.values())
+
+
+def random_password(length: int = 30):
+    """Generate random password."""
+    return secrets.token_urlsafe(length)

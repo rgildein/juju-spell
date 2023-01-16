@@ -22,7 +22,7 @@ from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CON
 
 COMMAND_GROUPS = [
     CommandGroup("ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]),
-    # CommandGroup("ReadWrite", []),
+    CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
     CommandGroup("Other", [cli.VersionCMD]),
 ]
 
