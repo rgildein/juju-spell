@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """JujuSpell juju add user command."""
 import argparse
+import os
 import textwrap
 from getpass import getpass
 from typing import Any
@@ -121,7 +122,5 @@ class AddUserCMD(BaseJujuCMD):
         )
         return (
             f"Please put user information to personal config({PERSONAL_CONFIG_PATH}):"
-            + "\n\n"
-            + yaml_str
-            + "\n"
+            + f"{os.linesep}{os.linesep}{yaml_str}{os.linesep}"
         )
