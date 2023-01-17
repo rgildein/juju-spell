@@ -111,7 +111,7 @@ def test_base_juju_cmd_fill_parser(
                 type=mock_parse_filter,
                 required=False,
                 default="",
-                help="""Key-value pair comma separated string in double quotes
+                help="""Key-value pair comma separated string in double quotes 
                 e.g., "a=1,2,3 b=4,5,6". """,
             ),
             mock.call(
