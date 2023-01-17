@@ -68,7 +68,9 @@ def ssh_port_forwarding_proc(
     :param jumps: connect to the destination by first making a ssh connection
                   via list of jumps host described by destination
     """
-    logger.info("port forwarding %s to %s via %s", remote_target, local_target, destination)
+    logger.info(
+        "port forwarding %s to %s via %s", remote_target, local_target, destination
+    )
     cmd = ["ssh", destination, "-N", "-L", f"{local_target}:{remote_target}"]
     if jumps:
         # add jumps options
@@ -77,6 +79,7 @@ def ssh_port_forwarding_proc(
     logger.debug("cmd `%s` will be executed", cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc
+
 
 def sshuttle_proc(
     subnets: List[str], destination: str, jumps: Optional[List[str]] = None

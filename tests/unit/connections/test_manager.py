@@ -68,8 +68,14 @@ def test_get_free_tcp_port_exception(mock_is_port_free):
         ),
         (
             ("localhost:1234", "10.1.1.99:17070", "bastion", ["bastion1", "bastion2"]),
-            ["ssh", "bastion", "-N", "-L", "localhost:1234:10.1.1.99:17070",
-             "-J bastion1 -J bastion2"],
+            [
+                "ssh",
+                "bastion",
+                "-N",
+                "-L",
+                "localhost:1234:10.1.1.99:17070",
+                "-J bastion1 -J bastion2",
+            ],
         ),
         (
             ("1234", "10.1.1.99:17070", "ubuntu@bastion"),
@@ -83,9 +89,9 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
     from juju_spell.connections.manager import ssh_port_forwarding_proc
 
     ssh_port_forwarding_proc(*args)
-    mock_popen.assert_called_once_with(exp_cmd,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+    mock_popen.assert_called_once_with(
+        exp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
 
 
 @pytest.mark.parametrize(
@@ -94,8 +100,13 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
         ((["10.1.1.0/24"], "bastion"), ["sshuttle", "10.1.1.0/24", "-r", "bastion"]),
         (
             (["10.1.1.0/24"], "bastion", ["bastion1", "bastion2"]),
-            ["sshuttle", "10.1.1.0/24", "-r", "bastion",
-             "-e 'ssh -J bastion1 -J bastion2'"],
+            [
+                "sshuttle",
+                "10.1.1.0/24",
+                "-r",
+                "bastion",
+                "-e 'ssh -J bastion1 -J bastion2'",
+            ],
         ),
         (
             (["10.1.1.0/24", "20.1.1.0/24"], "ubuntu@bastion"),
@@ -103,16 +114,6 @@ def test_ssh_port_forwarding_proc(mock_popen, args, exp_cmd):
         ),
     ],
 )
-@mock.patch("juju_spell.connections.manager.subprocess.Popen")
-def test_sshuttle_proc(mock_popen, args, exp_cmd):
-    """Test create sshuttle connection."""
-    from juju_spell.connections.manager import sshuttle_proc
-
-    sshuttle_proc(*args)
-    mock_popen.assert_called_once_with(exp_cmd,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
-
 @mock.patch("juju_spell.connections.manager.subprocess.Popen")
 def test_sshuttle_proc(mock_popen, args, exp_cmd):
     """Test create sshuttle connection."""

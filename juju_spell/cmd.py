@@ -83,9 +83,8 @@ def get_dispatcher() -> Dispatcher:
 
     # configure logging
     logger = logging.getLogger()
-    logger.setLevel(
-        logging.DEBUG
-    )  # set root logger to debug level so that all messages are sent to Emitter
+    # set root logger to debug level so that all messages are sent to Emitter
+    logger.setLevel(logging.DEBUG)
 
     emit.debug(f"verbosity is set to {verbosity}")
     return Dispatcher(

@@ -122,5 +122,5 @@ class AddUserCMD(BaseJujuCMD):
         )
         return (
             f"Please put user information to personal config({PERSONAL_CONFIG_PATH}):"
-            + f"{os.linesep}{os.linesep}{yaml_str}{os.linesep}"
+            f"{os.linesep}{os.linesep}{yaml_str}{os.linesep}"
         )

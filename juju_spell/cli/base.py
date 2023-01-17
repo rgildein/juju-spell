@@ -130,9 +130,8 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
             raise RuntimeError(f"command `{self.command}` is incorrect")
 
         filtered_config = get_filtered_config(self.config, parsed_args.filter)
-        loop = (
-            asyncio.get_event_loop()
-        )  # TODO: optionally new event loop, it's needed ???
+        # TODO: optionally new event loop, it's needed ???
+        loop = asyncio.get_event_loop()
         task = loop.create_task(run(filtered_config, self.command(), parsed_args))
         return loop.run_until_complete(asyncio.gather(task))
 
