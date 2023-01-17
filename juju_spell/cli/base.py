@@ -115,8 +115,10 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
             type=parse_filter,
             required=False,
             default="",
-            help="""Key-value pair comma separated string in double quotes
-            e.g., "a=1,2,3 b=4,5,6". """,
+            help=(
+                "Key-value pair comma separated string in double quotes e.g., "
+                '"a=1,2,3 b=4,5,6". '
+            ),
         )
         parser.add_argument(
             "--models",
