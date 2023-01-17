@@ -3,9 +3,9 @@ name: Test suite
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
-    branches: [ master ]
+    branches: [ master, main ]
   push:
-    branches: [ master ]
+    branches: [ master, main ]
 
 jobs:
   lint-unit:
@@ -29,3 +29,20 @@ jobs:
       run: tox -e lint
     - name: Run unit tests
       run: tox -e unit
+
+    - name: Save PR number to file
+      run: echo ${{ github.event.number }} > PR_NUMBER.txt
+    - name: Archive PR number
+      uses: actions/upload-artifact@v3
+      with:
+        name: PR_NUMBER
+        path: PR_NUMBER.txt
+    - name: Save coverage report
+      run: |
+        report_root="/home/runner/work/juju-spell/juju-spell/report"
+        cp ${report_root}/coverage.xml cov.xml
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: ./cov.xml
