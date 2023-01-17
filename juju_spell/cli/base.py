@@ -115,7 +115,10 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
             type=parse_filter,
             required=False,
             default="",
-            help="""Key-value pair comma separated string in double quotes e.g., "a=1,2,3 b=4,5,6". """,
+            help=(
+                "Key-value pair comma separated string in double quotes e.g., "
+                '"a=1,2,3 b=4,5,6". '
+            ),
         )
         parser.add_argument(
             "--models",
@@ -129,7 +132,8 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
             raise RuntimeError(f"command `{self.command}` is incorrect")
 
         filtered_config = get_filtered_config(self.config, parsed_args.filter)
-        loop = asyncio.get_event_loop()  # TODO: optionally new event loop, it's needed ???
+        # TODO: optionally new event loop, it's needed ???
+        loop = asyncio.get_event_loop()
         task = loop.create_task(run(filtered_config, self.command(), parsed_args))
         return loop.run_until_complete(asyncio.gather(task))
 
@@ -143,7 +147,9 @@ class JujuWriteCMD(BaseJujuCMD, metaclass=ABCMeta):
 
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command for JujuCommands."""
-        if not parsed_args.silent and not confirm(text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}"):
+        if not parsed_args.silent and not confirm(
+            text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}"
+        ):
             return 0
 
         return super().run(parsed_args)

@@ -31,11 +31,15 @@ def get_result(controller_config: Controller, output: Any) -> RESULT_TYPE:
     }
 
 
-async def run_parallel(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
+async def run_parallel(
+    config: Config, command: BaseJujuCommand, parsed_args: Namespace
+) -> RESULTS_TYPE:
     pass
 
 
-async def run_serial(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
+async def run_serial(
+    config: Config, command: BaseJujuCommand, parsed_args: Namespace
+) -> RESULTS_TYPE:
     """Run controller target command serially.
 
     Parameters:
@@ -58,11 +62,15 @@ async def run_serial(config: Config, command: BaseJujuCommand, parsed_args: Name
     return results
 
 
-async def run_batch(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
+async def run_batch(
+    config: Config, command: BaseJujuCommand, parsed_args: Namespace
+) -> RESULTS_TYPE:
     pass
 
 
-async def run(config: Config, command: BaseJujuCommand, parsed_args: Namespace) -> RESULTS_TYPE:
+async def run(
+    config: Config, command: BaseJujuCommand, parsed_args: Namespace
+) -> RESULTS_TYPE:
     try:
         run_type = parsed_args.run_type
         logger.info("running with run_type: %s", run_type)

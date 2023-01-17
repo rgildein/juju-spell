@@ -35,7 +35,9 @@ def test_string(regex, value):
     assert string.convert(value, view) == value
 
 
-@pytest.mark.parametrize("regex, value", [(SUBNET_REGEX, "1.2"), (UUID_REGEX, "1-2-3-4-5")])
+@pytest.mark.parametrize(
+    "regex, value", [(SUBNET_REGEX, "1.2"), (UUID_REGEX, "1-2-3-4-5")]
+)
 def test_string_exception(regex, value):
     """Test custom string option."""
     string = String(regex, "test message")
@@ -44,7 +46,9 @@ def test_string_exception(regex, value):
         string.convert(value, view)
 
 
-def _update_test_config(config: Dict[str, Any], extra_configuration: Dict[str, Any]) -> Dict[str, Any]:
+def _update_test_config(
+    config: Dict[str, Any], extra_configuration: Dict[str, Any]
+) -> Dict[str, Any]:
     """Update test config."""
     updated_config = config.copy()
     extra_connection_configuration = extra_configuration.get("connection", {})
@@ -73,8 +77,14 @@ def _update_test_config(config: Dict[str, Any], extra_configuration: Dict[str, A
             {},  # extra configuration
             {},  # connection
             [
-                {"name": "example_controller", "endpoint": "10.1.1.46:17070"},  # controller 0
-                {"name": "example_controller_without_optional", "endpoint": "10.1.1.47:17070"},  # controller 1
+                {
+                    "name": "example_controller",
+                    "endpoint": "10.1.1.46:17070",
+                },  # controller 0
+                {
+                    "name": "example_controller_without_optional",
+                    "endpoint": "10.1.1.47:17070",
+                },  # controller 1
             ],
         ),
         # test optional configuration option
@@ -82,21 +92,38 @@ def _update_test_config(config: Dict[str, Any], extra_configuration: Dict[str, A
             {},  # extra configuration
             {"port-range": range(17071, 17170)},  # connection
             [
-                {"description": "some nice notes", "tags": ["test"], "risk": 3},  # controller 0
-                {"description": None, "tags": None, "risk": 5, "connection": None},  # controller 1
+                {
+                    "description": "some nice notes",
+                    "tags": ["test"],
+                    "risk": 3,
+                },  # controller 0
+                {
+                    "description": None,
+                    "tags": None,
+                    "risk": 5,
+                    "connection": None,
+                },  # controller 1
             ],
         ),
         (
             {"connection": {"port-range": "18000:1900"}},  # extra configuration
             {"port-range": range(18000, 1900)},  # connection
             [
-                {"name": "example_controller", "endpoint": "10.1.1.46:17070"},  # controller 0
-                {"name": "example_controller_without_optional", "endpoint": "10.1.1.47:17070"},  # controller 1
+                {
+                    "name": "example_controller",
+                    "endpoint": "10.1.1.46:17070",
+                },  # controller 0
+                {
+                    "name": "example_controller_without_optional",
+                    "endpoint": "10.1.1.47:17070",
+                },  # controller 1
             ],
         ),
     ],
 )
-def test_validate_config(extra_configuration, exp_connection, exp_controller, test_config):
+def test_validate_config(
+    extra_configuration, exp_connection, exp_controller, test_config
+):
     """Test validate config."""
     test_config = _update_test_config(test_config, extra_configuration)
 
@@ -127,8 +154,16 @@ def test_validate_config(extra_configuration, exp_connection, exp_controller, te
         {"controllers": [{"endpoint": "1.2.3"}]},
         {"controllers": [{"endpoint": "llocalhost"}]},
         {"controllers": [{"ca_cert": "1234"}]},
-        {"controllers": [{"connection": {"destination": "1.2.3.4", "subnets": ["1.2.3.4/00"]}}]},
-        {"controllers": [{"connection": {"destination": "1.2.3.4", "subnets": ["1.2"]}}]},
+        {
+            "controllers": [
+                {"connection": {"destination": "1.2.3.4", "subnets": ["1.2.3.4/00"]}}
+            ]
+        },
+        {
+            "controllers": [
+                {"connection": {"destination": "1.2.3.4", "subnets": ["1.2"]}}
+            ]
+        },
         {"controllers": [{"connection": {"destination": "1.2.3.4", "jumps": [None]}}]},
     ],
 )
@@ -225,7 +260,9 @@ def test_load_config_file(tmp_path, config_yaml):
 @mock.patch("juju_spell.config._validate_config")
 @mock.patch("juju_spell.config.merge_configs")
 @mock.patch("juju_spell.config.load_config_file")
-def test_load_config(mock_load_config_file, mock_merge_configs, mock_validate_config, tmp_path):
+def test_load_config(
+    mock_load_config_file, mock_merge_configs, mock_validate_config, tmp_path
+):
     """Test load config."""
     test_config_path = tmp_path / "config.yaml"
     test_config_path.touch()
@@ -237,7 +274,9 @@ def test_load_config(mock_load_config_file, mock_merge_configs, mock_validate_co
     # testing the load_config function
     config = load_config(test_config_path, test_personal_config_path)
 
-    mock_load_config_file.assert_has_calls([mock.call(test_config_path), mock.call(test_personal_config_path)])
+    mock_load_config_file.assert_has_calls(
+        [mock.call(test_config_path), mock.call(test_personal_config_path)]
+    )
     mock_merge_configs.assert_called_once_with(exp_config, exp_config)
     mock_validate_config.assert_called_once_with(mock_merge_configs.return_value)
     assert config == mock_validate_config.return_value

@@ -26,7 +26,8 @@ def _is_port_free(port: int) -> bool:
 def get_free_tcp_port(port_range: range) -> int:
     """Get free TCP port from range.
 
-    This function will return free port on local system. This port will be used to port-forward remote controller
+    This function will return free port on local system.
+    This port will be used to port-forward remote controller
     to localhost:<port>.
     """
     list_of_ports = list(port_range)
@@ -41,14 +42,17 @@ def get_free_tcp_port(port_range: range) -> int:
 
 
 def ssh_port_forwarding_proc(
-    local_target: str, remote_target: str, destination: str, jumps: Optional[List[str]] = None
+    local_target: str,
+    remote_target: str,
+    destination: str,
+    jumps: Optional[List[str]] = None,
 ) -> subprocess.Popen:
     """Port forward target through destination.
 
     Example:
     Call this function as follows
     ```python
-    ssh_port_forwarding_proc("localhost:17071", "10.1.1.99:17070", "gandalf@customer", ["bastion"])
+    ssh_port_forwarding_proc("localhost:17071","10.1.1.99:17070","gandalf@customer",["bastion"])
     ```
     is equivalent to
     ```bash
@@ -58,12 +62,15 @@ def ssh_port_forwarding_proc(
 
     :param local_target: bind_address:port to which remote target will be port-forwarded
     :param remote_target: remote host and port, which will be port-forwarded
-    :param destination: ssh destination, which may be specified as either [user@]hostname or a URI of the form
+    :param destination: ssh destination, which may be specified as
+                        either [user@]hostname or a URI of the form
                         `ssh://[user@]hostname[:port]`
-    :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
-                  destination
+    :param jumps: connect to the destination by first making a ssh connection
+                  via list of jumps host described by destination
     """
-    logger.info("port forwarding %s to %s via %s", remote_target, local_target, destination)
+    logger.info(
+        "port forwarding %s to %s via %s", remote_target, local_target, destination
+    )
     cmd = ["ssh", destination, "-N", "-L", f"{local_target}:{remote_target}"]
     if jumps:
         # add jumps options
@@ -74,7 +81,9 @@ def ssh_port_forwarding_proc(
     return proc
 
 
-def sshuttle_proc(subnets: List[str], destination: str, jumps: Optional[List[str]] = None) -> subprocess.Popen:
+def sshuttle_proc(
+    subnets: List[str], destination: str, jumps: Optional[List[str]] = None
+) -> subprocess.Popen:
     """Create sshuttle tunnel.
 
     Example:
@@ -86,14 +95,14 @@ def sshuttle_proc(subnets: List[str], destination: str, jumps: Optional[List[str
     ```bash
     sshuttle -r gandalf@customer -e 'ssh -J bastion' 10.1.1.0/24
     ```
-    and it will create ssh tunnel and add subnetworks to iptables. This will redirect all traffic to subnets through
-    this tunnel.
+    and it will create ssh tunnel and add subnetworks to iptables. This will redirect
+    all traffic to subnets through this tunnel.
 
     :param subnets: capture and forward traffic to these subnets
-    :param destination: ssh hostname (and optional username and password) of remote sshuttle server
-                        [USERNAME[:PASSWORD]@]ADDR[:PORT]
-    :param jumps: connect to the destination by first making a ssh connection via list of jumps host described by
-                  destination
+    :param destination: ssh hostname (and optional username and password) of remote
+                        sshuttle server [USERNAME[:PASSWORD]@]ADDR[:PORT]
+    :param jumps: connect to the destination by first making a ssh connection via list
+                  of jumps host described by destination
     """
     logger.info("sshuttle %s subnets via %s", subnets, destination)
     cmd = ["sshuttle", *subnets, "-r", destination]
@@ -189,7 +198,9 @@ class ConnectManager(object):
             cacert=controller_config.ca_cert,
         )
         logger.info("controller %s was connected", controller.controller_name)
-        self.connections[controller_config.name] = Connection(controller, connection_process)
+        self.connections[controller_config.name] = Connection(
+            controller, connection_process
+        )
         return controller
 
     async def clean(self):
@@ -203,7 +214,9 @@ class ConnectManager(object):
                 connection.connection_process.terminate()
 
             del self.connections[name]
-            logger.info("%s connection was closed", connection.controller.controller_uuid)
+            logger.info(
+                "%s connection was closed", connection.controller.controller_uuid
+            )
 
     async def get_controller(
         self,
@@ -213,11 +226,15 @@ class ConnectManager(object):
         reconnect: bool = False,
     ) -> juju.Controller:
         """Get controller."""
-        assert isinstance(controller_config, Controller), "Not supported format of controller config"
+        assert isinstance(
+            controller_config, Controller
+        ), "Not supported format of controller config"
 
         connection = self.connections.get(controller_config.name)
         if connection and connection.controller.is_connected() and not reconnect:
-            logger.info("%s using controller from cache", connection.controller.controller_uuid)
+            logger.info(
+                "%s using controller from cache", connection.controller.controller_uuid
+            )
             return connection.controller
         elif connection and reconnect:
             await connection.controller.disconnect()

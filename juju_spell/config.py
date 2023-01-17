@@ -17,32 +17,41 @@ logger = logging.getLogger(__name__)
 
 ENDPOINT_REGEX = (
     r"^(?:http)s?://"  # http:// or https://
-    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    # host
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+"
+    r"(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"
     r"localhost|"  # localhost
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP
     r"(?::\d+)?"  # Optional[port]
     r"(?:/?|[/?]\S+)$"
 )
 API_ENDPOINT_REGEX = (
-    r"^(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    # host
+    r"^(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+"
+    r"(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"
     r"localhost|"  # localhost
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP
     r"(:\d+)?$"  # port
 )
-UUID_REGEX = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+UUID_REGEX = (
+    r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
 CA_CERT_REGEX = r"^(-*)BEGIN CERTIFICATE(-*)\n((.|\n)*)\n(-*)END CERTIFICATE(-*)$"
 SUBNET_REGEX = r"^([0-9]{1,3}\.){3}[0-9]{1,3}($|/(8|9|1[0-9]|2[0-9]|3[0-2]))$"
 DESTINATION_REGEX = (
     r"^([A-Za-z]*@)?"  # Optional[user]
-    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # host
+    # host
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"
     r"([A-Za-z0-9,_,-,.]*)|"  # destination
     r"localhost|"  # localhost
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$"  # IP
 )
 PORT_RANGE = (
-    r"^((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))"
+    r"^((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|"
+    r"(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))"
     r":"  # delimiter
-    r"((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$"
+    r"((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|"
+    r"([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$"
 )
 
 
@@ -96,7 +105,11 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
         "connection": confuse.MappingTemplate(
             {
                 "port-range": confuse.Optional(
-                    PortRange(PORT_RANGE, "Invalid port-range definition", default=JUJUSPELL_DEFAULT_PORT_RANGE)
+                    PortRange(
+                        PORT_RANGE,
+                        "Invalid port-range definition",
+                        default=JUJUSPELL_DEFAULT_PORT_RANGE,
+                    )
                 ),
             }
         ),
@@ -110,7 +123,9 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
                     "description": confuse.Optional(str),
                     "tags": confuse.Optional(confuse.Sequence(str)),
                     "risk": confuse.Choice(range(1, 6), default=5),
-                    "endpoint": String(API_ENDPOINT_REGEX, "Invalid api endpoint definition"),
+                    "endpoint": String(
+                        API_ENDPOINT_REGEX, "Invalid api endpoint definition"
+                    ),
                     "ca_cert": String(CA_CERT_REGEX, "Invalid ca-cert format"),
                     "username": str,
                     "password": str,
@@ -124,11 +139,21 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
                         ConnectionDict(
                             {
                                 "subnets": confuse.Optional(
-                                    confuse.Sequence(String(SUBNET_REGEX, "Invalid subnet definition"))
+                                    confuse.Sequence(
+                                        String(
+                                            SUBNET_REGEX, "Invalid subnet definition"
+                                        )
+                                    )
                                 ),
-                                "destination": String(DESTINATION_REGEX, "Invalid destination definition"),
+                                "destination": String(
+                                    DESTINATION_REGEX, "Invalid destination definition"
+                                ),
                                 "jumps": confuse.Optional(
-                                    confuse.Sequence(String(DESTINATION_REGEX, "Invalid jump definition"))
+                                    confuse.Sequence(
+                                        String(
+                                            DESTINATION_REGEX, "Invalid jump definition"
+                                        )
+                                    )
                                 ),
                             }
                         )
@@ -201,7 +226,9 @@ def load_config_file(path):
     return source
 
 
-def load_config(config_path: Path, personal_config_path: Optional[Path] = None) -> Config:
+def load_config(
+    config_path: Path, personal_config_path: Optional[Path] = None
+) -> Config:
     """Load ad validate yaml config file."""
     source = load_config_file(config_path)
     if personal_config_path and personal_config_path.exists():

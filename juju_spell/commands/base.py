@@ -29,7 +29,8 @@ class BaseJujuCommand(metaclass=ABCMeta):
     def __init__(self):
         """Init for command."""
         self.name = getattr(self.__class__, "__name__", "unknown")
-        # TODO: we need to set logging formatter for craft_cli with format: "%(name)s: %(message)s"
+        # TODO: we need to set logging formatter for craft_cli
+        # with format: "%(name)s: %(message)s"
         self.logger = logging.getLogger(self.name)
 
     @staticmethod

@@ -10,3 +10,5 @@ report/
 config.yaml
 .history/**
 .idea
+.project
+.pydevproject

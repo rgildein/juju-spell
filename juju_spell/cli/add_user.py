@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """JujuSpell juju add user command."""
 import argparse
+import os
 import textwrap
 from getpass import getpass
 from typing import Any
@@ -36,8 +37,8 @@ class AddUserCMD(BaseJujuCMD):
     help_msg = "add juju user to remote controller"
     overview = textwrap.dedent(
         """
-        The command will create user on controller with random_password or gived password
-        and print the yaml config to stdout.
+        The command will create user on controller with random_password or gived
+        password and print the yaml config to stdout.
 
         Example:
         $ juju_spell add-user --username newuser
@@ -62,7 +63,10 @@ class AddUserCMD(BaseJujuCMD):
         parser.add_argument(
             "--display_name",
             type=str,
-            help=("display_name to create. If display_name is None then it will be set as username"),
+            help=(
+                "display_name to create. If display_name is None then it will be set as"
+                " username"
+            ),
             required=False,
         )
         parser.add_argument(
@@ -85,7 +89,8 @@ class AddUserCMD(BaseJujuCMD):
         """Pretty formatter for output.
 
         Notes:
-            - The first element of retval, which is a list, is a list of controllers' output. The example:
+            - The first element of retval, which is a list, is a list of controllers'
+            output. The example:
 
             retval = [
                 [
@@ -112,5 +117,10 @@ class AddUserCMD(BaseJujuCMD):
         for controller_output in retval[0]:
             output["controllers"].append(controller_output["output"])
 
-        yaml_str = yaml.dump(output, default_flow_style=False, allow_unicode=True, encoding=None)
-        return f"Please put user information to personal config({PERSONAL_CONFIG_PATH}):" + "\n\n" + yaml_str + "\n"
+        yaml_str = yaml.dump(
+            output, default_flow_style=False, allow_unicode=True, encoding=None
+        )
+        return (
+            f"Please put user information to personal config({PERSONAL_CONFIG_PATH}):"
+            f"{os.linesep}{os.linesep}{yaml_str}{os.linesep}"
+        )

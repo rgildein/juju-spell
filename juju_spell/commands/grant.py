@@ -27,5 +27,7 @@ class GrantCommand(BaseJujuCommand):
 
     async def execute(self, controller: Controller, **kwargs):
         """Execute."""
-        result: bool = await controller.grant(username=kwargs["username"], acl=kwargs["acl"])
+        result: bool = await controller.grant(
+            username=kwargs["username"], acl=kwargs["acl"]
+        )
         return result
