@@ -39,7 +39,7 @@ jobs:
         path: PR_NUMBER.txt
     - name: Save coverage report
       run: |
-        report_root="/home/runner/work/juju-spell/juju-spell/report/coverage.xml"
+        report_root="/home/runner/work/juju-spell/juju-spell/report"
         cp ${report_root}/coverage.xml cov.xml
     - name: Archive code coverage results
       uses: actions/upload-artifact@v3
