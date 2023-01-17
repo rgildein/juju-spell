@@ -1,8 +1,12 @@
+import asyncio
 import dataclasses
 import logging
+import time
 from typing import Dict
+from uuid import UUID
 
 from juju import juju
+from juju.errors import JujuConnectionError
 
 from juju_spell.config import Controller
 from juju_spell.connections.network import BaseConnection, get_connection
@@ -11,12 +15,64 @@ from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
 logger = logging.getLogger(__name__)
 
 MAX_FRAME_SIZE = 6**24
+CONENCTION_TIMEOUT = 60  # seconds
 
 
 @dataclasses.dataclass
 class Connection:
     controller: juju.Controller
     connection_process: BaseConnection
+
+
+async def controller_direct_connection(
+    controller: juju.Controller,
+    uuid: UUID,
+    name: str,
+    endpoint: str,
+    username: str,
+    password: str,
+    cacert: str,
+):
+    """Direct connection to controller without JUJU_DATA.
+
+    This is a helper function for connecting to a controller with simple exponential
+    retry and with fix for missing controller_name and controller_uuid.
+    """
+    start = time.time()
+    wait: float = 1.5
+    attempt: int = 0
+    while True:
+        try:
+            await controller._connector.connect(
+                endpoint=endpoint,
+                username=username,
+                password=password,
+                cacert=cacert,
+                retries=0,  # disable retires in connection
+                retry_backoff=0,
+            )
+            controller._connector.controller_uuid = uuid
+            controller._connector.controller_name = name
+            break
+        except JujuConnectionError:
+            # Note(rgildein): Connection will raise JujuConnectionError if endpoint
+            # is unreachable. This can happen, for example, when port forwarding is
+            # through a subprocess and the process has not yet started.
+            logger.info("%s connection to controller %s failed", uuid, name)
+            await asyncio.sleep(wait)
+            if time.time() - start >= CONENCTION_TIMEOUT:
+                raise
+            wait = 1.5 ** (attempt - 2)  # exponential wait 1.5^(x-2)
+            attempt += 1
+            continue
+        except Exception as error:
+            logger.info(
+                "%s connection to controller %s failed with error '%s'",
+                uuid,
+                name,
+                error,
+            )
+            raise
 
 
 class ConnectManager(object):
@@ -75,17 +131,19 @@ class ConnectManager(object):
             controller_config, port_range, sshuttle
         )
         connection_process.connect()
-
-        await controller.connect(
+        self.connections[controller_config.name] = Connection(
+            controller, connection_process
+        )
+        await controller_direct_connection(
+            controller,
+            uuid=controller_config.uuid,
+            name=controller_config.name,
             endpoint=controller_endpoint,
             username=controller_config.username,
             password=controller_config.password,
             cacert=controller_config.ca_cert,
         )
         logger.info("controller %s was connected", controller.controller_name)
-        self.connections[controller_config.name] = Connection(
-            controller, connection_process
-        )
         return controller
 
     async def clean(self):
