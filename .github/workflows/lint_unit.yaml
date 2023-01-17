@@ -3,9 +3,9 @@ name: Test suite
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
-    branches: [ master ]
+    branches: [ master, main ]
   push:
-    branches: [ master ]
+    branches: [ master, main ]
 
 jobs:
   lint-unit:
