@@ -78,7 +78,7 @@ class ConnectManager(object):
 
         await controller.connect(
             endpoint=controller_endpoint,
-            username=controller_config.username,
+            username=controller_config.user,
             password=controller_config.password,
             cacert=controller_config.ca_cert,
         )

@@ -19,7 +19,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -33,7 +33,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -49,7 +49,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -68,7 +68,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -82,7 +82,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -102,7 +102,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -116,7 +116,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -132,7 +132,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -146,7 +146,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -165,7 +165,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -182,7 +182,7 @@ from juju_spell.filter import get_filtered_config, make_controllers_filter
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -223,7 +223,7 @@ def test_make_controller_filter(
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -237,7 +237,7 @@ def test_make_controller_filter(
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
@@ -253,7 +253,7 @@ def test_make_controller_filter(
                     owner="owner-a",
                     endpoint="localhost:17070",
                     ca_cert="",
-                    username="admin",
+                    user="admin",
                     password="pwd",
                     model_mapping={
                         "lma": "monitoring",
