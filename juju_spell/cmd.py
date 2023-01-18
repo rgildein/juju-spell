@@ -25,7 +25,6 @@ COMMAND_GROUPS = [
         "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
     ),
     CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
-    CommandGroup("Other", [cli.VersionCMD]),
 ]
 
 GLOBAL_ARGS = [
@@ -95,20 +94,28 @@ def get_dispatcher() -> Dispatcher:
     )
 
 
+def _run_dispatcher(dispatcher: Dispatcher) -> None:
+    """Run Dispatcher for JujuSpell."""
+    global_args = dispatcher.pre_parse_args(sys.argv[1:])
+    if global_args.get("version"):
+        emit.message(f"JujuSpell {APP_VERSION}")
+
+    if global_args.get("config"):
+        config = load_config(global_args["config"])
+    else:
+        config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
+
+    dispatcher.load_command(config)
+    dispatcher.run()
+
+
 def exec_cmd() -> int:
     """Execute craft cli."""
     dispatcher = get_dispatcher()
     return_code = 0
 
     try:
-        global_args = dispatcher.pre_parse_args(sys.argv[1:])
-        if global_args.get("config"):
-            config = load_config(global_args["config"])
-        else:
-            config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
-
-        dispatcher.load_command(config)
-        dispatcher.run()
+        _run_dispatcher(dispatcher)
     except ArgumentParsingError as error:
         print(error, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()

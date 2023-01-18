@@ -20,12 +20,10 @@ from .grant import GrantCMD
 from .ping import PingCMD
 from .show_controller import ShowControllerInformationCMD
 from .status import StatusCMD
-from .version import VersionCMD
 
 __all__ = [
     "AddUserCMD",
     "StatusCMD",
-    "VersionCMD",
     "ShowControllerInformationCMD",
     "PingCMD",
     "GrantCMD",
