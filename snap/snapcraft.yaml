@@ -12,9 +12,14 @@ confinement: devmode
 apps:
   juju-spell:
     command: bin/juju-spell
-    plugs: [ network, network-control, ssh-keys ]
-    environment:
-      JUJUSPELLSDIR: $SNAP_DATA/
+    plugs:
+      # For ssh-tunnel/sshuttle
+      - network
+      - ssh-keys
+      - firewall-control
+      # Access to config file
+      - home
+      - dot-local-share-juju-spell
 
 parts:
   juju-spell:
@@ -27,3 +32,9 @@ parts:
       snapcraftctl build
       echo "Version: $(python3 setup.py --version)"
       snapcraftctl set-version "$(python3 setup.py --version)"
+
+plugs:
+  dot-local-share-juju-spell:
+    interface: personal-files
+    write:
+      - $HOME/.local/share/juju-spell
