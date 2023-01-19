@@ -31,7 +31,7 @@ class GrantCMD(JujuWriteCMD):
         The command will set access level of user to controller.
 
         Example:
-        $ juju_spell grant --username user-abc
+        $ juju_spell grant --user user-abc
         """
     )
 
@@ -40,7 +40,7 @@ class GrantCMD(JujuWriteCMD):
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         super().fill_parser(parser=parser)
         parser.add_argument(
-            "--username",
+            "--user",
             type=str,
             help="username to grant",
             required=True,
