@@ -10,7 +10,7 @@ import confuse
 import yaml
 from confuse import RootView
 
-from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
+from juju_spell.settings import DEFAULT_PORT_RANGE
 from juju_spell.utils import merge_list_of_dict_by_key
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
                     PortRange(
                         PORT_RANGE,
                         "Invalid port-range definition",
-                        default=JUJUSPELL_DEFAULT_PORT_RANGE,
+                        default=DEFAULT_PORT_RANGE,
                     )
                 ),
             }

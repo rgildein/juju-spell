@@ -6,7 +6,7 @@ import subprocess
 from typing import List, Optional, Tuple
 
 from juju_spell.config import Controller
-from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
+from juju_spell.settings import DEFAULT_PORT_RANGE
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ class SshuttleSubprocess(BaseSubprocessConnection):
 
 def get_connection(
     controller_config: Controller,
-    port_range: range = JUJUSPELL_DEFAULT_PORT_RANGE,
+    port_range: range = DEFAULT_PORT_RANGE,
     sshuttle: bool = False,
 ) -> Tuple[str, BaseConnection]:
     """Get connection."""

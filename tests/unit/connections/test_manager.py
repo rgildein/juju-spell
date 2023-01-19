@@ -12,6 +12,26 @@ from juju_spell import config as juju_spell_config
 from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
 
 
+@pytest.mark.parametrize(
+    "attempt, retry_backoff, exp_wait",
+    [
+        (0, 1.5, 0.44),
+        (1, 1.5, 0.67),
+        (2, 1.5, 1),
+        (3, 1.5, 1.5),
+        (4, 1.5, 2.25),
+        (5, 1.5, 3.38),
+    ],
+)
+def test_get_wait_time(attempt, retry_backoff, exp_wait):
+    """Test calculation of wait time."""
+    from juju_spell.connections.manager import _get_wait_time
+
+    wait = _get_wait_time(attempt, retry_backoff)
+
+    assert exp_wait == round(wait, 2)
+
+
 @pytest.mark.asyncio
 async def test_controller_direct_connection():
     """Test direct connection to controller with reties."""
@@ -44,7 +64,7 @@ async def test_controller_direct_connection():
 
 
 @pytest.mark.asyncio
-@mock.patch("juju_spell.connections.manager.CONENCTION_TIMEOUT", new=0.5)
+@mock.patch("juju_spell.connections.manager.DEFAULT_CONNECTIN_TIMEOUT", new=0.5)
 async def test_controller_direct_connection_timeout():
     """Test direct connection to controller with reties."""
     from juju_spell.connections.manager import controller_direct_connection

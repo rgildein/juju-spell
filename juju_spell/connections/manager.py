@@ -2,7 +2,7 @@ import asyncio
 import dataclasses
 import logging
 import time
-from typing import Dict
+from typing import Dict, Union
 from uuid import UUID
 
 from juju import juju
@@ -10,18 +10,25 @@ from juju.errors import JujuConnectionError
 
 from juju_spell.config import Controller
 from juju_spell.connections.network import BaseConnection, get_connection
-from juju_spell.settings import JUJUSPELL_DEFAULT_PORT_RANGE
+from juju_spell.settings import (
+    DEFAULT_CONNECTIN_TIMEOUT,
+    DEFAULT_PORT_RANGE,
+    DEFAULT_RETRY_BACKOFF,
+    DEFUALT_MAX_FRAME_SIZE,
+)
 
 logger = logging.getLogger(__name__)
-
-MAX_FRAME_SIZE = 6**24
-CONENCTION_TIMEOUT = 60  # seconds
 
 
 @dataclasses.dataclass
 class Connection:
     controller: juju.Controller
     connection_process: BaseConnection
+
+
+def _get_wait_time(attempt: int, retry_backoff: Union[int, float]) -> float:
+    """Calculate wait time for reconnection."""
+    return retry_backoff ** (attempt - 2)  # exponential wait y^(x-2)
 
 
 async def controller_direct_connection(
@@ -39,7 +46,6 @@ async def controller_direct_connection(
     retry and with fix for missing controller_name and controller_uuid.
     """
     start = time.time()
-    wait: float = 1.5
     attempt: int = 0
     while True:
         try:
@@ -59,10 +65,11 @@ async def controller_direct_connection(
             # is unreachable. This can happen, for example, when port forwarding is
             # through a subprocess and the process has not yet started.
             logger.info("%s connection to controller %s failed", uuid, name)
+            wait = _get_wait_time(attempt, DEFAULT_RETRY_BACKOFF)
             await asyncio.sleep(wait)
-            if time.time() - start >= CONENCTION_TIMEOUT:
+            if time.time() - start >= DEFAULT_CONNECTIN_TIMEOUT:
                 raise
-            wait = 1.5 ** (attempt - 2)  # exponential wait 1.5^(x-2)
+
             attempt += 1
             continue
         except Exception as error:
@@ -126,7 +133,7 @@ class ConnectManager(object):
     ) -> juju.Controller:
         """Prepare connection to Controller and return it."""
         logger.info("getting a new connection to controller %s", controller_config.name)
-        controller = juju.Controller(max_frame_size=MAX_FRAME_SIZE)
+        controller = juju.Controller(max_frame_size=DEFUALT_MAX_FRAME_SIZE)
         controller_endpoint, connection_process = get_connection(
             controller_config, port_range, sshuttle
         )
@@ -161,7 +168,7 @@ class ConnectManager(object):
     async def get_controller(
         self,
         controller_config: Controller,
-        port_range: range = JUJUSPELL_DEFAULT_PORT_RANGE,
+        port_range: range = DEFAULT_PORT_RANGE,
         sshuttle: bool = False,
         reconnect: bool = False,
     ) -> juju.Controller:
