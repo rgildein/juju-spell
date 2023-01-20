@@ -21,7 +21,7 @@ async def test_add_user_execute(test_config):
     output = await cmd.execute(
         mock_conn,
         **{
-            "username": "new-user",
+            "user": "new-user",
             "password": "new-user-pwd",
             "display_name": "new-user-display-name",
             "controller_config": controller,
@@ -36,7 +36,7 @@ async def test_add_user_execute(test_config):
     )
     assert output == {
         "uuid": controller.uuid,
-        "username": "new-user",
+        "user": "new-user",
         "display_name": "new-user-display-name",
         "password": "new-user-pwd",
     }

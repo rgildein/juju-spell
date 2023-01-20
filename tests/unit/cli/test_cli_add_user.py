@@ -13,7 +13,7 @@ from juju_spell.settings import PERSONAL_CONFIG_PATH
                 [
                     {
                         "output": {
-                            "username": "new-user",
+                            "user": "new-user",
                             "display_name": "new-user-display-name",
                             "password": "new-user-pwd",
                             "uuid": "ea3229b3-1ecf-4fa5-bf5a-e8885ab2de57",
@@ -27,7 +27,7 @@ from juju_spell.settings import PERSONAL_CONFIG_PATH
                     {
                         "display_name": "new-user-display-name",
                         "password": "new-user-pwd",
-                        "username": "new-user",
+                        "user": "new-user",
                         "uuid": "ea3229b3-1ecf-4fa5-bf5a-e8885ab2de57",
                     }
                 ]

@@ -13,14 +13,14 @@ class AddUserCommand(BaseJujuCommand):
             password = random_password()
 
         user = await controller.add_user(
-            username=kwargs["username"],
+            username=kwargs["user"],
             password=password,
             display_name=kwargs["display_name"],
         )
 
         return {
             "uuid": kwargs["controller_config"].uuid,
-            "username": user.username,
+            "user": user.username,
             "display_name": user.display_name,
             "password": password,
         }

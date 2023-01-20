@@ -37,15 +37,15 @@ class AddUserCMD(BaseJujuCMD):
     help_msg = "add juju user to remote controller"
     overview = textwrap.dedent(
         """
-        The command will create user on controller with random_password or gived
+        The command will create user on controller with random_password or given
         password and print the yaml config to stdout.
 
         Example:
-        $ juju_spell add-user --username newuser
+        $ juju_spell add-user --user newuser
 
         controllers:
             - uuid: 74ef132a-6c96-48db-808c-76e8396f4feb
-              username: newuser
+              user: newuser
               password: "{random_password}"
         """
     )
@@ -55,7 +55,7 @@ class AddUserCMD(BaseJujuCMD):
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         super().fill_parser(parser=parser)
         parser.add_argument(
-            "--username",
+            "--user",
             type=str,
             help="username to create",
             required=True,
@@ -64,14 +64,14 @@ class AddUserCMD(BaseJujuCMD):
             "--display_name",
             type=str,
             help=(
-                "display_name to create. If display_name is None then it will be set as"
-                " username"
+                "display_name to create. If display_name is None then it will be set"
+                "as username"
             ),
             required=False,
         )
         parser.add_argument(
             "-p",
-            dest="passowrd",
+            dest="password",
             nargs="?",
             required=False,
             help=craft_cli.HIDDEN,
@@ -82,7 +82,7 @@ class AddUserCMD(BaseJujuCMD):
         super().before(parsed_args=parsed_args)
         parsed_args.password = getpass("Password(If empty will use random password): ")
         if not parsed_args.display_name:
-            parsed_args.display_name = parsed_args.username
+            parsed_args.display_name = parsed_args.user
 
     @staticmethod
     def format_output(retval: Any) -> str:

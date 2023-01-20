@@ -119,6 +119,34 @@ def _update_test_config(
                 },  # controller 1
             ],
         ),
+        # test empty model in model_mapping
+        (
+            {  # extra configuration
+                "controllers": [
+                    {
+                        "model_mapping": {
+                            "lma": None,
+                            "default": None,
+                        }
+                    }
+                ]
+            },
+            {},  # connection
+            [
+                {
+                    "name": "example_controller",
+                    "endpoint": "10.1.1.46:17070",
+                    "model_mapping": {
+                        "lma": None,
+                        "default": None,
+                    },
+                },  # controller 0
+                {
+                    "name": "example_controller_without_optional",
+                    "endpoint": "10.1.1.47:17070",
+                },  # controller 1
+            ],
+        ),
     ],
 )
 def test_validate_config(

@@ -48,11 +48,11 @@ TEST_PERSONAL_CONFIG = """
 controllers:
   - name: example_controller
     uuid: c29e8cf7-9380-4d2f-91bb-ac4d9f26a60c
-    username: admin
+    user: admin
     password: pass1234
   - name: example_controller_without_optional
     uuid: 1f918f78-97ab-47d2-b3a5-4b15fd75b67b
-    username: admin
+    user: admin
     password: pass1234
 """
 
@@ -81,7 +81,7 @@ controllers:
         - 20.1.1.0/24
       jumps:
         - bastion
-    username: admin
+    user: admin
     password: pass1234
   - name: example_controller_without_optional
     uuid: 1f918f78-97ab-47d2-b3a5-4b15fd75b67b
@@ -95,7 +95,7 @@ controllers:
     model_mapping:
       lma: monitoring
       default: production
-    username: admin
+    user: admin
     password: pass1234
 """
 

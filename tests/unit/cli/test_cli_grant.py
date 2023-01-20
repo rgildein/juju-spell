@@ -10,7 +10,7 @@ def test_grant_cmd_fill_parser():
 
     parser.add_argument.assert_has_calls(
         [
-            mock.call("--username", type=str, help="username to grant", required=True),
+            mock.call("--user", type=str, help="username to grant", required=True),
             mock.call(
                 "--acl",
                 type=str,

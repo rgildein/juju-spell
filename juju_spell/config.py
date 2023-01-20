@@ -127,12 +127,12 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
                         API_ENDPOINT_REGEX, "Invalid api endpoint definition"
                     ),
                     "ca_cert": String(CA_CERT_REGEX, "Invalid ca-cert format"),
-                    "username": str,
+                    "user": str,
                     "password": str,
                     "model_mapping": confuse.MappingTemplate(
                         {
-                            "lma": confuse.String(default="lma"),
-                            "default": confuse.String(default="production"),
+                            "lma": confuse.Optional(str),
+                            "default": confuse.Optional(str),
                         }
                     ),
                     "connection": confuse.Optional(
@@ -182,7 +182,7 @@ class Controller:
     owner: str
     endpoint: str
     ca_cert: str
-    username: str
+    user: str
     password: str
     model_mapping: Dict[str, str]
     # optional attributes and attributes with default value

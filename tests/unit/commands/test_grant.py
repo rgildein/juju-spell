@@ -11,7 +11,7 @@ async def test_grant_execute(test_config):
 
     mock_conn = AsyncMock()
 
-    await cmd.execute(mock_conn, **{"username": "new-user", "acl": "superuser"})
+    await cmd.execute(mock_conn, **{"user": "new-user", "acl": "superuser"})
 
     mock_conn.grant.assert_awaited_once_with(
         **{"username": "new-user", "acl": "superuser"}

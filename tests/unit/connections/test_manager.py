@@ -85,7 +85,7 @@ class TestConnectManager(unittest.IsolatedAsyncioTestCase):
         assert controller == mocked_controller
         mocked_controller.connect.assert_called_once_with(
             endpoint=exp_endpoint,
-            username=config.username,
+            username=config.user,
             password=config.password,
             cacert=config.ca_cert,
         )
