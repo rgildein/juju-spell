@@ -25,12 +25,11 @@ COMMAND_GROUPS = [
         "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
     ),
     CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
-    CommandGroup("Other", [cli.VersionCMD]),
 ]
 
 GLOBAL_ARGS = [
     GlobalArgument(
-        "version", "flag", "-v", "--version", "Show the application version and exit"
+        "version", "flag", None, "--version", "Show the application version and exit"
     ),
     GlobalArgument(
         "config", "option", "-c", "--config", "Set the path to custom config."
@@ -95,20 +94,43 @@ def get_dispatcher() -> Dispatcher:
     )
 
 
+def _run_dispatcher(dispatcher: Dispatcher) -> None:
+    """Run Dispatcher for JujuSpell.
+
+    This function checks whether the `-v/--version' flag is present in the CLI
+    arguments, if it is present in a command, it will print the version and continue,
+    on the contrary, if the flag is used alone, it will print a message and end the
+    function. Next, dispatcher.pre_parse_args will be called, the app config will be
+    loaded (from default path or via `--config` CLI argument), the command will be
+    loaded with dispatcher and finally the dispatcher will be run.
+    """
+    # Check if -v or --version was provided
+    args, filtered_params = dispatcher._parse_options(
+        dispatcher.global_arguments, sys.argv[1:]
+    )
+    if args.get("version"):
+        emit.message(f"JujuSpell: {APP_VERSION}")
+        if not filtered_params:
+            return  # exit if no command was provided
+
+    global_args = dispatcher.pre_parse_args(sys.argv[1:])
+    if global_args.get("config"):
+        config = load_config(global_args["config"])
+    else:
+        config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
+
+    dispatcher.load_command(config)
+    dispatcher.run()
+
+
 def exec_cmd() -> int:
     """Execute craft cli."""
     dispatcher = get_dispatcher()
     return_code = 0
 
     try:
-        global_args = dispatcher.pre_parse_args(sys.argv[1:])
-        if global_args.get("config"):
-            config = load_config(global_args["config"])
-        else:
-            config = load_config(CONFIG_PATH, PERSONAL_CONFIG_PATH)
-
-        dispatcher.load_command(config)
-        dispatcher.run()
+        _run_dispatcher(dispatcher)
+        emit.ended_ok()
     except ArgumentParsingError as error:
         print(error, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()
