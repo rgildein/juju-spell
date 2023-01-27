@@ -6,7 +6,7 @@ from dataclasses import asdict
 from .config import Config, Controller
 
 # --filter "a=v1,v2,v3 b=v4,v5,v6"
-FILTER_EXPRESSION_REGEX = r"([^=]+)=([^=]+)(?:\s|$)"
+FILTER_EXPRESSION_REGEX = r"([A-Za-z]+)=([^=]+)(?:\s|$)"
 
 
 def make_controllers_filter(filter_expression):
