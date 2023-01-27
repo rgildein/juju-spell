@@ -18,16 +18,18 @@
 import argparse
 import asyncio
 import json
+import os
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-from craft_cli import BaseCommand, CraftError, emit
+from craft_cli import BaseCommand, emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
 from juju_spell.assignment.runner import run
 from juju_spell.cli.utils import confirm, parse_comma_separated_str, parse_filter
 from juju_spell.commands.base import BaseJujuCommand
 from juju_spell.config import Config
+from juju_spell.exceptions import JujuSpellError
 from juju_spell.filter import get_filtered_config
 
 
@@ -36,6 +38,7 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
 
     def __init__(self, config: Optional[Config]) -> None:
         """Initialize BaseCMD."""
+        self.config: Optional[Config] = None  # to overwrite config type hinting
         super().__init__(config)
 
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
@@ -54,15 +57,14 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
             emit.trace(f"function 'after' was run for {self.name} command")
             return 0
         except Exception as error:
-            # TODO: improve exception handling
-            emit.error(CraftError(message=str(error), details=""))
-            return 1
+            raise JujuSpellError(
+                f"{self.name} failed to run with error{os.linesep}  {error}"
+            ) from error
 
     @staticmethod
     def format_output(retval: Any) -> str:
         """Pretty formatter for output."""
         emit.debug(f"formatting `{retval}`")
-        # TODO: support more types here
         if isinstance(retval, (dict, list)):
             # TODO: add support for table, yaml, ... format
             return json.dumps(retval, default=vars, indent=1)
@@ -70,17 +72,17 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
         return str(retval)
 
     @abstractmethod
-    def execute(self, parsed_args: argparse.Namespace) -> Any:
+    def execute(self, parsed_args: argparse.Namespace) -> Any:  # pragma: no cover
         """Abstract function need to be defined for each JujuSpell CLI command."""
-        pass
+        ...
 
-    def before(self, parsed_args: argparse.Namespace) -> None:
+    def before(self, parsed_args: argparse.Namespace) -> None:  # pragma: no cover
         """Run before execution."""
-        pass
+        ...
 
-    def after(self, parsed_args: argparse.Namespace) -> None:
+    def after(self, parsed_args: argparse.Namespace) -> None:  # pragma: no cover
         """Run after execution."""
-        pass
+        ...
 
 
 class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
@@ -88,8 +90,8 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def command(self):
-        pass
+    def command(self):  # pragma: no cover
+        ...
 
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         """Define base arguments for Juju commands.
@@ -132,7 +134,6 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
             raise RuntimeError(f"command `{self.command}` is incorrect")
 
         filtered_config = get_filtered_config(self.config, parsed_args.filter)
-        # TODO: optionally new event loop, it's needed ???
         loop = asyncio.get_event_loop()
         task = loop.create_task(run(filtered_config, self.command(), parsed_args))
         return loop.run_until_complete(asyncio.gather(task))

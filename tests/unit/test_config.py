@@ -17,6 +17,7 @@ from juju_spell.config import (
     load_config_file,
     merge_configs,
 )
+from juju_spell.exceptions import JujuSpellError
 from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
 
 
@@ -283,6 +284,22 @@ def test_load_config_file(tmp_path, config_yaml):
 
     result = load_config_file(file_path)
     assert result == yaml.safe_load(io.StringIO(config_yaml))
+
+
+@pytest.mark.parametrize(
+    "raised_error, exp_error",
+    [
+        (FileNotFoundError, JujuSpellError),
+        (PermissionError, JujuSpellError),
+        (IsADirectoryError, IsADirectoryError),
+    ],
+)
+@mock.patch("juju_spell.config.open")
+def test_load_config_file_exception(mock_open, tmp_path, raised_error, exp_error):
+    """Test raising JujuSpell exception."""
+    mock_open.side_effect = raised_error
+    with pytest.raises(exp_error):
+        load_config_file(tmp_path)
 
 
 @mock.patch("juju_spell.config._validate_config")

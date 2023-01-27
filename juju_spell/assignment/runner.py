@@ -34,7 +34,11 @@ def get_result(controller_config: Controller, output: Any) -> RESULT_TYPE:
 async def run_parallel(
     config: Config, command: BaseJujuCommand, parsed_args: Namespace
 ) -> RESULTS_TYPE:
-    pass
+    """Run controller target command in parallel.
+
+    THIS FUNCTION IS NOT YET SUPPORTED.
+    """
+    raise NotImplementedError("running in parallel is not yet supported")
 
 
 async def run_serial(
@@ -65,7 +69,11 @@ async def run_serial(
 async def run_batch(
     config: Config, command: BaseJujuCommand, parsed_args: Namespace
 ) -> RESULTS_TYPE:
-    pass
+    """Run controller target command in batches.
+
+    THIS FUNCTION IS NOT YET SUPPORTED.
+    """
+    raise NotImplementedError("running in batches is not yet supported")
 
 
 async def run(

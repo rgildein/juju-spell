@@ -8,8 +8,9 @@ from typing import Any, Dict, List, Optional
 
 import confuse
 import yaml
-from confuse import RootView
+from confuse import ConfigError, RootView
 
+from juju_spell.exceptions import JujuSpellError
 from juju_spell.settings import DEFAULT_PORT_RANGE
 from juju_spell.utils import merge_list_of_dict_by_key
 
@@ -203,11 +204,15 @@ def _validate_config(source: Dict[str, Any]) -> Config:
 
     Using confuse library to validate config.
     """
-    _config = RootView([source])
-    valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)  # TODO: catch exception here
-    logger.info("config was validated")
-    config = Config(**valid_config)
-    return config
+    try:
+        _config = RootView([source])
+        valid_config = _config.get(JUJUSPELL_CONFIG_TEMPLATE)
+        logger.info("config was validated")
+        config = Config(**valid_config)
+        return config
+    except ConfigError as error:
+        logger.error("configuration file validation failed with error: %s", error)
+        raise JujuSpellError("configuration file validation failed") from error
 
 
 def merge_configs(config: Dict, personal_config: Dict):
@@ -220,10 +225,23 @@ def merge_configs(config: Dict, personal_config: Dict):
 
 
 def load_config_file(path):
-    with open(path, "r") as file:
-        source = yaml.safe_load(file)
-        logger.info("load config file from %s path", path)
-    return source
+    """Load config file.
+
+    raises: IsADirectoryError if path is directory
+    raises: FileNotFoundError -> JujuSpellError if fies does not exist
+    raises: PermissionError -> JujuSpellError if user has no permission to path
+    """
+    try:
+        with open(path, "r") as file:
+            source = yaml.safe_load(file)
+            logger.info("load config file from %s path", path)
+            return source
+    except FileNotFoundError as error:
+        logger.error("config file `%s` does not exists", path)
+        raise JujuSpellError(f"config file {path} does not exist") from error
+    except PermissionError as error:
+        logger.error("not enough permission for configuration file `%s`", path)
+        raise JujuSpellError(f"permission denied to read config file {path}") from error
 
 
 def load_config(
