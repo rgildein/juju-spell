@@ -25,12 +25,12 @@ import yaml
 from craft_cli import emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
-from juju_spell.cli.base import BaseJujuCMD
+from juju_spell.cli.base import JujuWriteCMD
 from juju_spell.commands.add_user import AddUserCommand
 from juju_spell.settings import PERSONAL_CONFIG_PATH
 
 
-class AddUserCMD(BaseJujuCMD):
+class AddUserCMD(JujuWriteCMD):
     """JujuSpell add user command."""
 
     name = "add-user"
@@ -65,7 +65,7 @@ class AddUserCMD(BaseJujuCMD):
             type=str,
             help=(
                 "display_name to create. If display_name is None then it will be set"
-                "as username"
+                "as user"
             ),
             required=False,
         )
