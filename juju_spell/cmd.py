@@ -24,7 +24,7 @@ COMMAND_GROUPS = [
     CommandGroup(
         "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
     ),
-    CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
+    CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD, cli.RemoveUserCMD]),
 ]
 
 GLOBAL_ARGS = [

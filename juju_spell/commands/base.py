@@ -76,7 +76,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
     @abstractmethod
     async def execute(
-        self, controller: Controller, **kwargs
+        self, controller: Controller, *args, **kwargs
     ) -> Any:  # pragma: no cover
         """Execute function.
 

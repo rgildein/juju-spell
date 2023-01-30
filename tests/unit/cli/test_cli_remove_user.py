@@ -1,6 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -13,20 +13,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import argparse
+from unittest import mock
 
-"""JujuSpell cli commands."""
-from .add_user import AddUserCMD
-from .grant import GrantCMD
-from .ping import PingCMD
-from .remove_user import RemoveUserCMD
-from .show_controller import ShowControllerInformationCMD
-from .status import StatusCMD
+from juju_spell.cli import RemoveUserCMD
 
-__all__ = [
-    "AddUserCMD",
-    "GrantCMD",
-    "RemoveUserCMD",
-    "PingCMD",
-    "StatusCMD",
-    "ShowControllerInformationCMD",
-]
+
+def test_fill_parser():
+    """Test add additional CLI arguments with BaseJujuCMD."""
+    parser = mock.MagicMock(spec=argparse.ArgumentParser)
+
+    cmd = RemoveUserCMD(None)
+    cmd.fill_parser(parser)
+
+    assert parser.add_argument.call_count == 5
+    parser.add_argument.assert_has_calls(
+        [
+            mock.call("--user", type=str, help="username to remove", required=True),
+        ]
+    )
