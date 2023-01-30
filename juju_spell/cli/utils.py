@@ -36,7 +36,7 @@ def _get_value_from_prompt(prompt) -> str:
         with emit.pause():
             return visible_prompt_func(prompt).strip()
     except (KeyboardInterrupt, EOFError):
-        raise Abort() from None
+        raise Abort("Aborted by user") from None
 
 
 def confirm(
@@ -77,10 +77,10 @@ def confirm(
             return default
         elif value in ("y", "yes"):
             return True
-        elif value in ("n", "no") and abort is False:
-            return False
         elif value in ("n", "no") and abort:
-            raise Abort()
+            raise Abort("Aborted by user")
+        elif value in ("n", "no"):
+            return False
 
         emit.message(gettext("Error: invalid input"))
 

@@ -146,10 +146,13 @@ class JujuReadCMD(BaseJujuCMD, metaclass=ABCMeta):
 class JujuWriteCMD(BaseJujuCMD, metaclass=ABCMeta):
     """Base CLI command for handling Juju commands with write access."""
 
+    abort = False
+
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command for JujuCommands."""
         if not parsed_args.silent and not confirm(
-            text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}"
+            text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}",
+            abort=self.abort,
         ):
             return 0
 

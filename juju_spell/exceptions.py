@@ -16,9 +16,10 @@
 
 """Exceptions."""
 
+
 class JujuSpellError(Exception):
     """Base exception for JujuSpell."""
 
 
 class Abort(JujuSpellError):
-    """An internal signalling exception that signals Click to abort."""
+    """An internal signalling exception that signals JujuSpell to abort."""
