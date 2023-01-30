@@ -9,7 +9,7 @@ from juju_spell.cli.utils import (
     parse_comma_separated_str,
     parse_filter,
 )
-from juju_spell.exceptions import Abort
+from juju_spell.exceptions import Abort, JujuSpellError
 
 
 @mock.patch("juju_spell.cli.utils.emit")
@@ -20,8 +20,8 @@ def test_get_value_from_prompt(mock_visible_prompt_func, mock_emit):
 
     _get_value_from_prompt(prompt)
 
-    mock_emit.message.assert_called_once_with(prompt)
-    mock_visible_prompt_func.assert_called_once_with(" ")
+    mock_emit.pause.assert_called_once()
+    mock_visible_prompt_func.assert_called_once_with(prompt)
 
 
 @mock.patch("juju_spell.cli.utils.emit")
@@ -36,34 +36,50 @@ def test_get_value_from_prompt_exception(mock_visible_prompt_func, _):
 
 
 @pytest.mark.parametrize(
-    "inputs, exp_result",
+    "inputs, kwargs, exp_result",
     [
-        (["u", "uu", "uuu", "y1", "y"], True),
-        (["Y"], True),
-        (["b", "bb", "bbb", "b1", "n"], False),
-        (["N"], False),
+        ([""], {}, True),
+        ([""], {"default": True}, True),
+        ([""], {"default": False}, False),
+        (["u", "uu", "uuu", "y1", "y"], {}, True),
+        (["Y"], {}, True),
+        (["b", "bb", "bbb", "b1", "n"], {}, False),
+        (["N"], {}, False),
     ],
 )
 @mock.patch("juju_spell.cli.utils._get_value_from_prompt")
-def test_confirm(mock_get_value_from_prompt, inputs, exp_result):
+@mock.patch("juju_spell.cli.utils.sys.stdin.isatty", return_value=True)
+def test_confirm(_, mock_get_value_from_prompt, inputs, kwargs, exp_result):
     """Test config function."""
     prompt = "test: [Y/n]"
     mock_get_value_from_prompt.side_effect = inputs
 
-    result = confirm(prompt, abort=False)
+    result = confirm(prompt, abort=False, **kwargs)
 
     assert result == exp_result
 
 
 @pytest.mark.parametrize("inputs", [["b", "bb", "bbb", "b1", "n"], ["N"]])
 @mock.patch("juju_spell.cli.utils._get_value_from_prompt")
-def test_confirm_abort(mock_get_value_from_prompt, inputs):
+@mock.patch("juju_spell.cli.utils.sys.stdin.isatty", return_value=True)
+def test_confirm_abort(_, mock_get_value_from_prompt, inputs):
     """Test config function."""
     prompt = "test: [Y/n]"
     mock_get_value_from_prompt.side_effect = inputs
 
     with pytest.raises(Abort):
         confirm(prompt, abort=True)
+
+
+@mock.patch("juju_spell.cli.utils.sys.stdin.isatty", return_value=False)
+def test_confirm_not_in_tty(mock_isatty):
+    """Test raising exception if stdin is not a tty."""
+    prompt = "test: [Y/n]"
+
+    with pytest.raises(JujuSpellError):
+        confirm(prompt)
+
+    mock_isatty.assert_called_once()
 
 
 @pytest.mark.parametrize(
