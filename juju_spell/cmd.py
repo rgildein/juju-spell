@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 
-import confuse
 from craft_cli import (
     ArgumentParsingError,
     CommandGroup,
@@ -18,6 +17,7 @@ from craft_cli import (
 
 from juju_spell import cli, utils
 from juju_spell.config import load_config
+from juju_spell.exceptions import JujuSpellError
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 COMMAND_GROUPS = [
@@ -139,10 +139,8 @@ def exec_cmd() -> int:
         print(error, file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()
         return_code = 0
-    except confuse.exceptions.ConfigError as error:
-        print(
-            f"error parsing configuration: `{error}`", file=sys.stderr
-        )  # to stderr, as argparse normally does
+    except JujuSpellError as error:
+        print(str(error), file=sys.stderr)  # to stderr, as argparse normally does
         emit.ended_ok()
         return_code = 1
     except CraftError as err:

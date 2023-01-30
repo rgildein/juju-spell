@@ -29,8 +29,6 @@ class BaseJujuCommand(metaclass=ABCMeta):
     def __init__(self):
         """Init for command."""
         self.name = getattr(self.__class__, "__name__", "unknown")
-        # TODO: we need to set logging formatter for craft_cli
-        # with format: "%(name)s: %(message)s"
         self.logger = logging.getLogger(self.name)
 
     @staticmethod
@@ -62,7 +60,9 @@ class BaseJujuCommand(metaclass=ABCMeta):
         return False
 
     @abstractmethod
-    async def execute(self, controller: Controller, **kwargs) -> Any:
+    async def execute(
+        self, controller: Controller, **kwargs
+    ) -> Any:  # pragma: no cover
         """Execute function.
 
         This part will be the main part function
@@ -71,4 +71,4 @@ class BaseJujuCommand(metaclass=ABCMeta):
             kwargs: This will be the kwargs passed to the function which
                 will contain the config for the selected controller
         """
-        pass
+        ...

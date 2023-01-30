@@ -20,9 +20,9 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from craft_cli import CraftError
 
 from juju_spell.config import Controller
+from juju_spell.exceptions import JujuSpellError
 
 
 def test_base_cmd_fill_parser(base_cmd):
@@ -57,11 +57,8 @@ def test_base_cmd_run_exception(mock_emit, base_cmd):
     base_cmd.before = mock_before = MagicMock()
     mock_before.side_effect = exp_error
 
-    assert base_cmd.run(parsed_args) == 1
-
-    mock_emit.error.assert_called_once_with(
-        CraftError(message=str(exp_error), details="")
-    )
+    with pytest.raises(JujuSpellError):
+        base_cmd.run(parsed_args)
 
 
 @pytest.mark.parametrize(
