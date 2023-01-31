@@ -256,3 +256,21 @@ def load_config(
 
     config = _validate_config(source)
     return config
+
+
+def convert_config(original_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert Juju config from `juju show-controller` to JujuSpell config.
+
+    Returns first object of dictionary, because format of output is defined as
+    a dictionary where key is name of controller.
+    """
+    for name, controller in original_config.items():
+        config = {
+            "uuid": controller["details"]["uuid"],
+            "name": name,
+            "endpoint": controller["details"]["api-endpoints"][0],
+            "ca_cert": controller["details"]["ca-cert"],
+            "user": controller["account"]["user"],
+            "password": controller["account"]["password"],
+        }
+        return config
