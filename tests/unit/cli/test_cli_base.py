@@ -130,13 +130,15 @@ async def test_base_juju_cmd_execute(
     """Test add additional CLI arguments with BaseJujuCMD."""
     parsed_args = argparse.Namespace(**{"filter": None})
     mock_asyncio.get_event_loop.return_value = loop = MagicMock()
+    task = loop.create_task.return_value = MagicMock()
 
     result = base_juju_cmd.execute(parsed_args)
 
     mock_get_filtered_config.assert_called_once_with(base_juju_cmd.config, None)
     mock_asyncio.get_event_loop.assert_called_once()
+    loop.create_task.assert_called_once()
     loop.run_until_complete.assert_called_once()
-    assert result == loop.run_until_complete.return_value
+    assert result == task.result.return_value
 
 
 def test_base_juju_cmd_execute_exception(base_juju_cmd):
