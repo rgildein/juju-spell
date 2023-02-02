@@ -8,9 +8,10 @@ Provides different ways to run the Juju command:
 """
 import logging
 from argparse import Namespace
+from dataclasses import asdict
 from typing import Any, Dict, List
 
-from juju_spell.commands.base import BaseJujuCommand
+from juju_spell.commands.base import BaseJujuCommand, Result
 from juju_spell.config import Config, Controller
 from juju_spell.connections import connect_manager, get_controller
 
@@ -20,14 +21,15 @@ RESULT_TYPE = Dict[str, Dict[str, Any]]
 RESULTS_TYPE = List[RESULT_TYPE]
 
 
-def get_result(controller_config: Controller, output: Any) -> RESULT_TYPE:
+def get_result(controller_config: Controller, output: Result) -> RESULT_TYPE:
     """Get command result."""
     return {
         "context": {
+            "uuid": controller_config.uuid,
             "name": controller_config.name,
             "customer": controller_config.customer,
         },
-        "output": output,
+        **asdict(output),
     }
 
 
@@ -61,7 +63,8 @@ async def run_serial(
         command_kwargs = vars(parsed_args)
         command_kwargs["controller_config"] = controller_config
         output = await command.run(controller=controller, **command_kwargs)
-        results.append(get_result(controller_config, output))
+        result = get_result(controller_config, output)
+        results.append(result)
 
     return results
 
