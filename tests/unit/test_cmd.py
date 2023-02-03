@@ -1,9 +1,10 @@
 from unittest import mock
 
 import pytest
-from craft_cli import Dispatcher
+from craft_cli import CommandGroup, Dispatcher
 
-from juju_spell.cmd import COMMAND_GROUPS, GLOBAL_ARGS, _run_dispatcher
+from juju_spell import cli
+from juju_spell.cmd import GLOBAL_ARGS, _run_dispatcher
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
 
 
@@ -22,7 +23,9 @@ from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CON
 def test_run_dispatcher(mock_load_config, mock_emit, mock_sys, cli_args):
     """Test run dispatcher."""
     mock_sys.argv = ["juju-spell", *cli_args]
-    dispatcher = Dispatcher(APP_NAME, COMMAND_GROUPS, extra_global_args=GLOBAL_ARGS)
+    command_groups = [CommandGroup("ReadOnly", [cli.PingCMD])]
+
+    dispatcher = Dispatcher(APP_NAME, command_groups, extra_global_args=GLOBAL_ARGS)
     dispatcher.load_command = mock.MagicMock()
     dispatcher.run = mock.MagicMock()
     args, filtered_params = dispatcher._parse_options(
