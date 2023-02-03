@@ -16,6 +16,7 @@
 
 """JujuSpell cli commands."""
 from .add_user import AddUserCMD
+from .base import JujuReadCMD, JujuWriteCMD
 from .grant import GrantCMD
 from .ping import PingCMD
 from .show_controller import ShowControllerInformationCMD
@@ -27,4 +28,6 @@ __all__ = [
     "ShowControllerInformationCMD",
     "PingCMD",
     "GrantCMD",
+    "JujuWriteCMD",
+    "JujuReadCMD",
 ]

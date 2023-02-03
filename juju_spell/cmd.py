@@ -20,13 +20,6 @@ from juju_spell.config import load_config
 from juju_spell.exceptions import JujuSpellError
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
 
-COMMAND_GROUPS = [
-    CommandGroup(
-        "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
-    ),
-    CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD]),
-]
-
 GLOBAL_ARGS = [
     GlobalArgument(
         "version", "flag", None, "--version", "Show the application version and exit"
@@ -35,6 +28,27 @@ GLOBAL_ARGS = [
         "config", "option", "-c", "--config", "Set the path to custom config."
     ),
 ]
+
+
+def get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
+
+
+def get_command_groups():
+    ro_commands = get_all_subclasses(cli.JujuReadCMD)
+    rw_commands = get_all_subclasses(cli.JujuWriteCMD)
+    command_groups = [
+        CommandGroup("ReadOnly", ro_commands),
+        CommandGroup("ReadWrite", rw_commands),
+    ]
+
+    return command_groups
 
 
 def get_verbosity() -> EmitterMode:
@@ -88,7 +102,7 @@ def get_dispatcher() -> Dispatcher:
     emit.debug(f"verbosity is set to {verbosity}")
     return Dispatcher(
         APP_NAME,
-        COMMAND_GROUPS,
+        get_command_groups(),
         summary="One juju to rule them all.",
         extra_global_args=GLOBAL_ARGS,
     )
