@@ -32,9 +32,18 @@ class PingCMD(JujuReadCMD):
 
     Example:
     $ juju-spell ping
-    {
-        "my-controller": "accessible"
-    }
+    [
+     {
+      "context": {
+       "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+       "name": "controller1",
+       "customer": "Gandalf"
+      },
+      "success": true,
+      "output": "accessible",
+      "error": null
+     }
+    ]
     """
     )
     command = PingCommand

@@ -41,12 +41,19 @@ class AddUserCMD(JujuWriteCMD):
         password and print the yaml config to stdout.
 
         Example:
-        $ juju_spell add-user --user newuser
+        $ juju-spell add-user --user newuser
+        Continue on cmd: add-user parsed_args: Namespace(silent=False,
+        run_type='serial', filter='', models=None, user='newuser', display_name=None,
+        password=None)[Y/n]: y
+        Password(If empty will use random password):
+        Please put user information to personal
+        config(/home/ubuntu/.local/share/juju-spell/config.personal.yaml):
 
         controllers:
-            - uuid: 74ef132a-6c96-48db-808c-76e8396f4feb
-              user: newuser
-              password: "{random_password}"
+        - uuid: e9fe93a8-b705-4067-8f30-6eec183eeb4f
+          name: controller1
+          user: newuser
+          password: H4A-GZLxn5Xr4g5aZ9aeymtN7L9kNxfmoTEJd_EB
         """
     )
 
@@ -92,33 +99,46 @@ class AddUserCMD(JujuWriteCMD):
             - The first element of retval, which is a list, is a list of controllers'
             output. The example:
 
-            retval = [
-                [
-                    {
-                        "output": output
-                        "context": {
-                            "name": controller_config.name,
-                            "customer": controller_config.customer,
-                        },
+            retval =
+            [
+                {
+                    "context": {
+                        ...
                     },
-                    {
-                        "output": output
-                        "context": {
-                            "name": controller_config.name,
-                            "customer": controller_config.customer,
-                        },
+                    "success": true,
+                    "output": {
+                        "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+                        "user": "Frodo",
+                        "display_name": "Frodo",
+                        "password": "dRhCziem0IcbV3OEcqWG5LCDXItP69WokeDDzgJ6"
                     },
-                ]
+                   "error": null
+                },
             ]
         """
         emit.debug(f"formatting `{retval}`")
 
-        output = {"controllers": []}
-        for controller_output in retval[0]:
-            output["controllers"].append(controller_output["output"])
+        controllers = []
+
+        for controller_output in retval:
+            output = {
+                "uuid": controller_output["context"]["uuid"],
+                "name": controller_output["context"]["name"],
+            }
+            if controller_output["output"] is not None:
+                output["user"] = controller_output["output"]["user"]
+                output["password"] = controller_output["output"]["password"]
+            else:
+                output["error"] = str(controller_output["error"])
+
+            controllers.append(output)
 
         yaml_str = yaml.dump(
-            output, default_flow_style=False, allow_unicode=True, encoding=None
+            {"controllers": controllers},
+            default_flow_style=False,
+            allow_unicode=True,
+            encoding=None,
+            sort_keys=False,
         )
         return (
             f"Please put user information to personal config({PERSONAL_CONFIG_PATH}):"

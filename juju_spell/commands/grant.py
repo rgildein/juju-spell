@@ -25,7 +25,7 @@ ACL_CHOICES = ["login", "add-model", "superuser"]
 class GrantCommand(BaseJujuCommand):
     """Grant permission for user."""
 
-    async def execute(self, controller: Controller, **kwargs):
+    async def execute(self, controller: Controller, **kwargs) -> bool:
         """Execute."""
         result: bool = await controller.grant(
             username=kwargs["user"], acl=kwargs["acl"]

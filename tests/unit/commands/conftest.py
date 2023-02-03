@@ -12,4 +12,6 @@ class TestJujuCommand(BaseJujuCommand):
 @pytest.fixture
 def test_juju_command():
     """Return test juju command object."""
-    return TestJujuCommand()
+    command = TestJujuCommand()
+    command.execute.reset_mock()
+    yield command

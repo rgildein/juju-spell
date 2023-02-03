@@ -19,7 +19,6 @@ class AddUserCommand(BaseJujuCommand):
         )
 
         return {
-            "uuid": kwargs["controller_config"].uuid,
             "user": user.username,
             "display_name": user.display_name,
             "password": password,

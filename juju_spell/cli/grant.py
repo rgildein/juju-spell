@@ -31,7 +31,22 @@ class GrantCMD(JujuWriteCMD):
         The command will set access level of user to controller.
 
         Example:
-        $ juju_spell grant --user user-abc
+        $ juju-spell grant --user newuser --acl superuser
+        Continue on cmd: grant parsed_args: Namespace(silent=False,
+        run_type='serial', filter='', models=None, user='newuser',
+        acl='superuser')[Y/n]: y
+        [
+         {
+          "context": {
+           "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+           "name": "controller1",
+           "customer": "Gandalf"
+          },
+          "success": true,
+          "output": true,
+          "error": null
+         }
+        ]
         """
     )
 
