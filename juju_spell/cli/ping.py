@@ -28,22 +28,22 @@ class PingCMD(JujuReadCMD):
     help_msg = "Check connection to controller(s)"
     overview = textwrap.dedent(
         """
-    The ping command check connection to controller(s).
+        The ping command check connection to controller(s).
 
-    Example:
-    $ juju-spell ping
-    [
-     {
-      "context": {
-       "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
-       "name": "controller1",
-       "customer": "Gandalf"
-      },
-      "success": true,
-      "output": "accessible",
-      "error": null
-     }
-    ]
-    """
+        Example:
+        $ juju-spell ping
+        [
+         {
+          "context": {
+           "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+           "name": "controller1",
+           "customer": "Gandalf"
+          },
+          "success": true,
+          "output": "accessible",
+          "error": null
+         }
+        ]
+        """
     )
     command = PingCommand

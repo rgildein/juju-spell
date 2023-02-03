@@ -64,7 +64,10 @@ class BaseJujuCommand(metaclass=ABCMeta):
         self.logger.info("%s running %s command", controller.controller_uuid, self.name)
         try:
             output = await self.execute(controller, **kwargs)
-            return Result(True, output=output)
+            if not isinstance(output, Result):
+                output = Result(True, output=output)
+
+            return output
         except Exception as error:
             self.logger.exception(error)
             return Result(False, output=None, error=error)
@@ -76,7 +79,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
     @abstractmethod
     async def execute(
-        self, controller: Controller, **kwargs
+        self, controller: Controller, *args, **kwargs
     ) -> Any:  # pragma: no cover
         """Execute function.
 

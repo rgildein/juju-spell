@@ -1,6 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -13,20 +13,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""JujuSpell juju remove user command."""
+from typing import Optional
 
-"""JujuSpell cli commands."""
-from .add_user import AddUserCMD
-from .grant import GrantCMD
-from .ping import PingCMD
-from .remove_user import RemoveUserCMD
-from .show_controller import ShowControllerInformationCMD
-from .status import StatusCMD
+from juju.controller import Controller
 
-__all__ = [
-    "AddUserCMD",
-    "GrantCMD",
-    "RemoveUserCMD",
-    "PingCMD",
-    "StatusCMD",
-    "ShowControllerInformationCMD",
-]
+from juju_spell.commands.base import BaseJujuCommand
+
+__all__ = ["RemoveUserCommand"]
+
+
+class RemoveUserCommand(BaseJujuCommand):
+    async def execute(
+        self, controller: Controller, *, user: Optional[str] = None, **kwargs
+    ) -> bool:
+        await controller.remove_user(username=user)
+        self.logger.info(f"user `{user}` was successfully removed")
+        return True
