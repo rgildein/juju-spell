@@ -17,7 +17,6 @@ from unittest import mock
 
 import pytest
 from juju import juju
-from juju.errors import JujuError
 
 from juju_spell.commands.remove_user import RemoveUserCommand
 
@@ -32,16 +31,4 @@ async def test_ping_execute():
     result = await remove_user.execute(controller, user=user)
 
     controller.remove_user.assert_called_once_with(username=user)
-    assert result == f"user `{user}` was successfully removed"
-
-
-@pytest.mark.asyncio
-async def test_ping_execute_exception():
-    """Test execute function for RemoveUserCommand with exception raised."""
-    user = "test-user"
-    controller = mock.MagicMock(spec=juju.Controller)
-    controller.remove_user.side_effect = JujuError
-
-    remove_user = RemoveUserCommand()
-    result = await remove_user.execute(controller, user=user)
-    assert result == f"failed to delete user `{user}` with error: "
+    assert result is True

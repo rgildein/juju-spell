@@ -64,7 +64,10 @@ class BaseJujuCommand(metaclass=ABCMeta):
         self.logger.info("%s running %s command", controller.controller_uuid, self.name)
         try:
             output = await self.execute(controller, **kwargs)
-            return Result(True, output=output)
+            if not isinstance(output, Result):
+                output = Result(True, output=output)
+
+            return output
         except Exception as error:
             self.logger.exception(error)
             return Result(False, output=None, error=error)

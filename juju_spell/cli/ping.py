@@ -29,7 +29,7 @@ class PingCMD(JujuReadCMD):
     overview = textwrap.dedent(
         """
         The ping command check connection to controller(s).
-    
+
         Example:
         $ juju-spell ping
         [

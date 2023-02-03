@@ -17,7 +17,6 @@
 from typing import Optional
 
 from juju.controller import Controller
-from juju.errors import JujuError
 
 from juju_spell.commands.base import BaseJujuCommand
 
@@ -27,10 +26,7 @@ __all__ = ["RemoveUserCommand"]
 class RemoveUserCommand(BaseJujuCommand):
     async def execute(
         self, controller: Controller, *, user: Optional[str] = None, **kwargs
-    ) -> str:
-        try:
-            await controller.remove_user(username=user)
-            return f"user `{user}` was successfully removed"
-        except JujuError as error:
-            self.logger.exception(error)
-            return f"failed to delete user `{user}` with error: {error}"
+    ) -> bool:
+        await controller.remove_user(username=user)
+        self.logger.info(f"user `{user}` was successfully removed")
+        return True

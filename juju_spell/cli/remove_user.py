@@ -32,25 +32,36 @@ class RemoveUserCMD(JujuWriteCMD):
         The command will remove user on controller.
 
         Example:
-        $ juju_spell remove-user --user newuser
-
+        $ juju-spell remove-user --user newuser
+        Continue on cmd: remove-user parsed_args: Namespace(silent=False,
+        run_type='serial', filter='', models=None, user='newuser')[Y/n]: y
         [
-          [
-            {
-              "context": {
-                "name": "controller1",
-                "customer": "customer1"
-              },
-              "output": null
-            },
-            {
-              "context": {
-                "name": "controller2",
-                "customer": "customer2"
-              },
-              "output": null
-            }
-          ]
+         {
+          "context": {
+           "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+           "name": "controller1",
+           "customer": "Gandalf"
+          },
+          "success": true,
+          "output": true,
+          "error": null
+         },
+         {
+          "context": {
+           "uuid": "93638105-296a-4bde-8bee-17a6dc04b955",
+           "name": "controller2",
+           "customer": "Gandalf"
+          },
+          "success": false,
+          "output": null,
+          "error": {
+           "message": "['failed to delete user \"newuser\": user \"newuser\" not
+                       found']",
+           "errors": [
+            "failed to delete user \"newuser\": user \"newuser\" not found"
+           ]
+          }
+         }
         ]
         """
     )
