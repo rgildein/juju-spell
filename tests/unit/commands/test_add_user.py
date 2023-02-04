@@ -35,7 +35,6 @@ async def test_add_user_execute(test_config):
         }
     )
     assert output == {
-        "uuid": controller.uuid,
         "user": "new-user",
         "display_name": "new-user-display-name",
         "password": "new-user-pwd",

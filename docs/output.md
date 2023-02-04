@@ -4,22 +4,23 @@
 [
 	{
 		"context" : {
-			"customer": "",
-			"name": ""
-
-		}
-		"output" : {
-			"ping": {},
-			"Info": {}
-		}
+            "uuid": "<controller_uuid>",
+            "name": "<controller_name>",
+			"customer": "<customer>"
+		},
+		"success": true,
+        "output": "<command-output>",
+        "error": null
 	},
 	{
 		"context" : {
-
-		}
-		"output" : {
-
-		}
+            "uuid": "<controller_uuid>",
+            "name": "<controller_name>",
+			"customer": "<customer>"
+		},
+		"success": true,
+        "output": "<command-output>",
+        "error": null
 	}
 ]
 ```

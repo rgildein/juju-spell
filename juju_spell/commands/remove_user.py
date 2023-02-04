@@ -13,21 +13,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""JujuSpell juju remove user command."""
+from typing import Optional
+
 from juju.controller import Controller
 
 from juju_spell.commands.base import BaseJujuCommand
 
-__all__ = ["GrantCommand", "ACL_CHOICES"]
-
-ACL_CHOICES = ["login", "add-model", "superuser"]
+__all__ = ["RemoveUserCommand"]
 
 
-class GrantCommand(BaseJujuCommand):
-    """Grant permission for user."""
-
-    async def execute(self, controller: Controller, **kwargs) -> bool:
-        """Execute."""
-        result: bool = await controller.grant(
-            username=kwargs["user"], acl=kwargs["acl"]
-        )
-        return result
+class RemoveUserCommand(BaseJujuCommand):
+    async def execute(
+        self, controller: Controller, *, user: Optional[str] = None, **kwargs
+    ) -> bool:
+        await controller.remove_user(username=user)
+        self.logger.info(f"user `{user}` was successfully removed")
+        return True

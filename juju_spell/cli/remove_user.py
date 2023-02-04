@@ -13,28 +13,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""JujuSpell juju remove user command."""
 import textwrap
 
 from craft_cli.dispatcher import _CustomArgumentParser
 
 from juju_spell.cli.base import JujuWriteCMD
-from juju_spell.commands.grant import ACL_CHOICES, GrantCommand
+from juju_spell.commands.remove_user import RemoveUserCommand
 
 
-class GrantCMD(JujuWriteCMD):
-    """Grant command."""
+class RemoveUserCMD(JujuWriteCMD):
+    """JujuSpell remove user command."""
 
-    name = "grant"
-    help_msg = "add juju user to remote controller"
+    name = "remove-user"
+    help_msg = "remove juju user to remote controller"
     overview = textwrap.dedent(
         """
-        The command will set access level of user to controller.
+        The command will remove user on controller.
 
         Example:
-        $ juju-spell grant --user newuser --acl superuser
-        Continue on cmd: grant parsed_args: Namespace(silent=False,
-        run_type='serial', filter='', models=None, user='newuser',
-        acl='superuser')[Y/n]: y
+        $ juju-spell remove-user --user newuser
+        Continue on cmd: remove-user parsed_args: Namespace(silent=False,
+        run_type='serial', filter='', models=None, user='newuser')[Y/n]: y
         [
          {
           "context": {
@@ -45,26 +45,34 @@ class GrantCMD(JujuWriteCMD):
           "success": true,
           "output": true,
           "error": null
+         },
+         {
+          "context": {
+           "uuid": "93638105-296a-4bde-8bee-17a6dc04b955",
+           "name": "controller2",
+           "customer": "Gandalf"
+          },
+          "success": false,
+          "output": null,
+          "error": {
+           "message": "['failed to delete user \"newuser\": user \"newuser\" not
+                       found']",
+           "errors": [
+            "failed to delete user \"newuser\": user \"newuser\" not found"
+           ]
+          }
          }
         ]
         """
     )
 
-    command = GrantCommand
+    command = RemoveUserCommand
 
     def fill_parser(self, parser: _CustomArgumentParser) -> None:
         super().fill_parser(parser=parser)
         parser.add_argument(
             "--user",
             type=str,
-            help="username to grant",
-            required=True,
-        )
-        parser.add_argument(
-            "--acl",
-            type=str,
-            choices=ACL_CHOICES,
-            help="Access control. e.g., {}.".format(",".join(ACL_CHOICES)),
-            default=False,
+            help="username to remove",
             required=True,
         )

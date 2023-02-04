@@ -15,12 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """JujuSpell base juju command."""
+import dataclasses
 import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, AsyncGenerator, List, Optional, Tuple
 
 from juju.controller import Controller
 from juju.model import Model
+
+
+@dataclasses.dataclass(frozen=True)
+class Result:
+    """Result from command."""
+
+    success: bool
+    output: Optional[Any] = None
+    error: Optional[Exception] = None
 
 
 class BaseJujuCommand(metaclass=ABCMeta):
@@ -46,13 +56,21 @@ class BaseJujuCommand(metaclass=ABCMeta):
                 yield model_name, model
                 await model.disconnect()
 
-    async def run(self, controller: Controller, **kwargs):
+    async def run(self, controller: Controller, **kwargs) -> Result:
         """Execute Juju command.
 
         **This function should not be changed.**
         """
         self.logger.info("%s running %s command", controller.controller_uuid, self.name)
-        return await self.execute(controller, **kwargs)
+        try:
+            output = await self.execute(controller, **kwargs)
+            if not isinstance(output, Result):
+                output = Result(True, output=output)
+
+            return output
+        except Exception as error:
+            self.logger.exception(error)
+            return Result(False, output=None, error=error)
 
     @property
     def need_sshuttle(self) -> bool:
@@ -61,7 +79,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
     @abstractmethod
     async def execute(
-        self, controller: Controller, **kwargs
+        self, controller: Controller, *args, **kwargs
     ) -> Any:  # pragma: no cover
         """Execute function.
 

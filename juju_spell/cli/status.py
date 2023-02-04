@@ -30,20 +30,26 @@ class StatusCMD(JujuReadCMD):
     help_msg = "Gets the status of selected model"
     overview = textwrap.dedent(
         """
-    The status command shows the status of the selected model.
+        The status command shows the status of the selected model.
 
-    Example:
-    $ juju-spell status
-    {
-     "my-controller": {
-      "controller": {
-       "applications": {},
-       "branches": {},
-       "controller_timestamp": "2022-12-14T21:42:15.50508204Z",
-       ...
-       }
-    }
-    """
+        Example:
+        $ juju-spell status
+        [
+         {
+          "context": {
+           "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+           "name": "Controller1",
+           "customer": "Gandalf"
+          },
+          "success": true,
+          "output": {
+           ...
+           }
+          },
+          "error": null
+         }
+        ]
+        """
     )
     command = StatusCommand
 

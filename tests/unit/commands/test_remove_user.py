@@ -13,21 +13,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from juju.controller import Controller
+from unittest import mock
 
-from juju_spell.commands.base import BaseJujuCommand
+import pytest
+from juju import juju
 
-__all__ = ["GrantCommand", "ACL_CHOICES"]
-
-ACL_CHOICES = ["login", "add-model", "superuser"]
+from juju_spell.commands.remove_user import RemoveUserCommand
 
 
-class GrantCommand(BaseJujuCommand):
-    """Grant permission for user."""
+@pytest.mark.asyncio
+async def test_ping_execute():
+    """Test execute function for RemoveUserCommand."""
+    user = "test-user"
+    controller = mock.MagicMock(spec=juju.Controller)
 
-    async def execute(self, controller: Controller, **kwargs) -> bool:
-        """Execute."""
-        result: bool = await controller.grant(
-            username=kwargs["user"], acl=kwargs["acl"]
-        )
-        return result
+    remove_user = RemoveUserCommand()
+    result = await remove_user.execute(controller, user=user)
+
+    controller.remove_user.assert_called_once_with(username=user)
+    assert result is True

@@ -18,13 +18,15 @@
 from .add_user import AddUserCMD
 from .grant import GrantCMD
 from .ping import PingCMD
+from .remove_user import RemoveUserCMD
 from .show_controller import ShowControllerInformationCMD
 from .status import StatusCMD
 
 __all__ = [
     "AddUserCMD",
+    "GrantCMD",
+    "RemoveUserCMD",
+    "PingCMD",
     "StatusCMD",
     "ShowControllerInformationCMD",
-    "PingCMD",
-    "GrantCMD",
 ]

@@ -13,21 +13,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from juju.controller import Controller
+import argparse
+from unittest import mock
 
-from juju_spell.commands.base import BaseJujuCommand
-
-__all__ = ["GrantCommand", "ACL_CHOICES"]
-
-ACL_CHOICES = ["login", "add-model", "superuser"]
+from juju_spell.cli import RemoveUserCMD
 
 
-class GrantCommand(BaseJujuCommand):
-    """Grant permission for user."""
+def test_fill_parser():
+    """Test add additional CLI arguments with BaseJujuCMD."""
+    parser = mock.MagicMock(spec=argparse.ArgumentParser)
 
-    async def execute(self, controller: Controller, **kwargs) -> bool:
-        """Execute."""
-        result: bool = await controller.grant(
-            username=kwargs["user"], acl=kwargs["acl"]
-        )
-        return result
+    cmd = RemoveUserCMD(None)
+    cmd.fill_parser(parser)
+
+    assert parser.add_argument.call_count == 5
+    parser.add_argument.assert_has_calls(
+        [
+            mock.call("--user", type=str, help="username to remove", required=True),
+        ]
+    )

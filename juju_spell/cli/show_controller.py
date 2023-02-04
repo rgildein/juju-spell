@@ -28,7 +28,34 @@ class ShowControllerInformationCMD(JujuReadCMD):
     help_msg = "Show controller information"
     overview = textwrap.dedent(
         """
-    Show controller information
-    """
+        Show controller information
+
+        Example:
+        $ juju-spell show-controller
+        [
+         {
+          "context": {
+           "uuid": "e9fe93a8-b705-4067-8f30-6eec183eeb4f",
+           "name": "controller1",
+           "customer": "Gandalf"
+          },
+          "success": true,
+          "output": {
+           "results": [
+            {
+             "addresses": [
+              "1.2.3.4:17070"
+             ],
+             "cacert": "...",
+             "error": null,
+             "unknown_fields": {}
+            }
+           ],
+           "unknown_fields": {}
+          },
+          "error": null
+         }
+        ]
+        """
     )
     command = ShowControllerCommand
