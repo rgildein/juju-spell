@@ -1,5 +1,6 @@
 """Module combinates all the commands."""
 import contextlib
+import inspect
 import logging
 import os
 import sys
@@ -16,6 +17,7 @@ from craft_cli import (
 )
 
 from juju_spell import cli, utils
+from juju_spell.cli.base import JujuReadCMD, JujuWriteCMD
 from juju_spell.config import load_config
 from juju_spell.exceptions import JujuSpellError
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
@@ -31,18 +33,13 @@ GLOBAL_ARGS = [
 
 
 def get_all_subclasses(cls):
-    all_subclasses = []
-
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(get_all_subclasses(subclass))
-
-    return all_subclasses
+    all_classes = inspect.getmembers(cli, inspect.isclass)
+    return [c[1] for c in all_classes if issubclass(c[1], cls) and c[1] != cls]
 
 
 def get_command_groups():
-    ro_commands = get_all_subclasses(cli.JujuReadCMD)
-    rw_commands = get_all_subclasses(cli.JujuWriteCMD)
+    ro_commands = get_all_subclasses(JujuReadCMD)
+    rw_commands = get_all_subclasses(JujuWriteCMD)
     command_groups = [
         CommandGroup("ReadOnly", ro_commands),
         CommandGroup("ReadWrite", rw_commands),
