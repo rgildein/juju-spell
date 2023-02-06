@@ -34,7 +34,7 @@ GLOBAL_ARGS = [
 
 def get_all_subclasses(cls):
     all_classes = inspect.getmembers(cli, inspect.isclass)
-    return [c[1] for c in all_classes if issubclass(c[1], cls) and c[1] != cls]
+    return [obj for _, obj in all_classes if issubclass(obj, cls) and obj != cls]
 
 
 def get_command_groups():
