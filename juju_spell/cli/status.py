@@ -19,11 +19,11 @@ import textwrap
 
 from craft_cli.dispatcher import _CustomArgumentParser
 
-from juju_spell.cli.base import BaseJujuCMD
+from juju_spell.cli.base import JujuReadCMD
 from juju_spell.commands.status import StatusCommand
 
 
-class StatusCMD(BaseJujuCMD):
+class StatusCMD(JujuReadCMD):
     """JujuSpell juju status command."""
 
     name = "status"

@@ -1,5 +1,6 @@
 """Module combinates all the commands."""
 import contextlib
+import inspect
 import logging
 import os
 import sys
@@ -16,16 +17,10 @@ from craft_cli import (
 )
 
 from juju_spell import cli, utils
+from juju_spell.cli.base import JujuReadCMD, JujuWriteCMD
 from juju_spell.config import load_config
 from juju_spell.exceptions import JujuSpellError
 from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
-
-COMMAND_GROUPS = [
-    CommandGroup(
-        "ReadOnly", [cli.StatusCMD, cli.ShowControllerInformationCMD, cli.PingCMD]
-    ),
-    CommandGroup("ReadWrite", [cli.AddUserCMD, cli.GrantCMD, cli.RemoveUserCMD]),
-]
 
 GLOBAL_ARGS = [
     GlobalArgument(
@@ -35,6 +30,22 @@ GLOBAL_ARGS = [
         "config", "option", "-c", "--config", "Set the path to custom config."
     ),
 ]
+
+
+def get_all_subclasses(cls):
+    all_classes = inspect.getmembers(cli, inspect.isclass)
+    return [obj for _, obj in all_classes if issubclass(obj, cls) and obj != cls]
+
+
+def get_command_groups():
+    ro_commands = get_all_subclasses(JujuReadCMD)
+    rw_commands = get_all_subclasses(JujuWriteCMD)
+    command_groups = [
+        CommandGroup("ReadOnly", ro_commands),
+        CommandGroup("ReadWrite", rw_commands),
+    ]
+
+    return command_groups
 
 
 def get_verbosity() -> EmitterMode:
@@ -88,7 +99,7 @@ def get_dispatcher() -> Dispatcher:
     emit.debug(f"verbosity is set to {verbosity}")
     return Dispatcher(
         APP_NAME,
-        COMMAND_GROUPS,
+        get_command_groups(),
         summary="One juju to rule them all.",
         extra_global_args=GLOBAL_ARGS,
     )
