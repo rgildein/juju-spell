@@ -26,7 +26,7 @@ def test_fill_parser():
     cmd = RemoveUserCMD(None)
     cmd.fill_parser(parser)
 
-    assert parser.add_argument.call_count == 5
+    assert parser.add_argument.call_count == 6
     parser.add_argument.assert_has_calls(
         [
             mock.call("--user", type=str, help="username to remove", required=True),

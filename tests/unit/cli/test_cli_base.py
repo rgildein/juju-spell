@@ -35,7 +35,7 @@ def test_base_cmd_fill_parser(base_cmd):
 
 def test_base_cmd_run(base_cmd):
     """Test run from BaseCMD."""
-    parsed_args = argparse.Namespace(**{"test": True})
+    parsed_args = argparse.Namespace(**{"dry_run": False, "test": True})
     base_cmd.before = mock_before = MagicMock()
     base_cmd.execute = mock_execute = MagicMock()
     base_cmd.format_output = mock_format_output = MagicMock()
@@ -186,3 +186,27 @@ def test_juju_write_cmd_run(
         juju_write_cmd.run(parsed_args)
 
     assert (mock_run.call_count != 0) == executed
+
+
+@pytest.mark.parametrize(
+    "parsed_args, executed",
+    [
+        ({"dry_run": False}, True),
+        ({"dry_run": True, "filter": None}, False),
+    ],
+)
+@patch("juju_spell.cli.base.BaseJujuCMD.execute")
+@patch("juju_spell.cli.base.get_filtered_config")
+def test_juju_cmd_dry_run(
+    mock_execute,
+    mock_get_filtered_config,
+    parsed_args,
+    executed,
+    base_juju_cmd,
+    test_config,
+):
+    parsed_args = argparse.Namespace(**parsed_args)
+    base_juju_cmd.safe_parsed_args_output = MagicMock()
+    mock_get_filtered_config.return_value = test_config
+    base_juju_cmd.run(parsed_args)
+    assert (base_juju_cmd.execute.call_count != 0) == executed
