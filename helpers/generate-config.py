@@ -3,7 +3,6 @@ import subprocess
 import sys
 
 import click
-
 import yaml
 
 CONTROLLERS_FILE = "/home/{}/.local/share/juju/controllers.yaml"
@@ -14,8 +13,8 @@ CONFIG_PERSONAL_FILE = "~/.local/share/juju-spell/config-personal.yaml"
 
 def str_presenter(dumper, data):
     if len(data.splitlines()) > 1:  # check for multiline string
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
 
 
 yaml.add_representer(str, str_presenter)
@@ -23,13 +22,7 @@ yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
 
 
 def get_yaml_content(user, host, file):
-    cmd = [
-        "ssh",
-        host,
-        "sudo",
-        "cat",
-        file.format(user)
-    ]
+    cmd = ["ssh", host, "sudo", "cat", file.format(user)]
     try:
         controller_config = subprocess.check_output(cmd)
     except subprocess.CalledProcessError:
@@ -55,7 +48,12 @@ def get_config(user, host, owner):
     accounts = get_accounts(user, host)
     configs = []
     for controller in controllers["controllers"]:
-        config = {"name": host + "_" + controller, "customer": host, "owner": owner, "tags": ["automatic"]}
+        config = {
+            "name": host + "_" + controller,
+            "customer": host,
+            "owner": owner,
+            "tags": ["automatic"],
+        }
         api_endpoints = controllers["controllers"][controller]["api-endpoints"]
         if len(api_endpoints) > 0:
             config["endpoint"] = api_endpoints[0]
@@ -90,7 +88,13 @@ def get_yaml_configs(user, hosts, owner):
 
 
 @click.option("-o", "--owner", type=str, required=True, help="Owner of the cloud")
-@click.option("-u", "--user", type=str, required=True, help="User that bootstrapped the remote juju controller")
+@click.option(
+    "-u",
+    "--user",
+    type=str,
+    required=True,
+    help="User that bootstrapped the remote juju controller",
+)
 @click.option("-f", "--file", type=str, required=True, help="Path to the hosts file")
 @click.command()
 def main(owner, user, file):
