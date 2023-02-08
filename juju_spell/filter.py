@@ -33,6 +33,8 @@ def make_controllers_filter(filter_expression):
             filter_expression,
         ):
             target_val: t.Union[t.List[str], str] = controller_asdict.get(key)
+            if not target_val:
+                return False
             if (
                 isinstance(target_val, list)
                 and len(serialize(target_val) & serialize(values)) <= 0
