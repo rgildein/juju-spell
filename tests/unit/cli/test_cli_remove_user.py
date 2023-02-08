@@ -26,6 +26,7 @@ def test_fill_parser():
     cmd = RemoveUserCMD(None)
     cmd.fill_parser(parser)
 
+    # This one is to check the basic arguments is been added.
     assert parser.add_argument.call_count == 6
     parser.add_argument.assert_has_calls(
         [
