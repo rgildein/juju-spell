@@ -62,7 +62,12 @@ async def run_serial(
         logger.debug("%s running in serial", controller.controller_uuid)
         command_kwargs = vars(parsed_args)
         command_kwargs["controller_config"] = controller_config
-        output = await command.run(controller=controller, **command_kwargs)
+        pre_check = await command.pre_check(controller=controller, **command_kwargs)
+        if pre_check is not None:
+            output = pre_check
+        else:
+            output = await command.run(controller=controller, **command_kwargs)
+
         result = get_result(controller_config, output)
         results.append(result)
 
