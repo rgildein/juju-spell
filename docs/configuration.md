@@ -49,23 +49,23 @@ controllers:
 ## Generate configuration
 
 The tool provides a helper script to generate the config given a file containing a list of hosts.
-You need to have ssh access to the hosts in the file and have sudo access to cat the juju yaml configuration files 
-in the home of the user specified with `--user`. You need to pass also `--owner` to specify the owner of the controllers 
+You need to have ssh access to the hosts in the file and have sudo access to cat the juju yaml configuration files
+in the home of the user specified with `--user`. You need to pass also `--owner` to specify the owner of the controllers
 pulled by the script.
 
 i.e.
 ```commandline
-$ cat helpers/hosts.txt
+$ cat scripts/hosts.txt
 maas.node1.mycloud
 maas.node2.mycloud
 ```
 
 Run the script with:
 ```commandline
-virtualenv -p python3 helpers/venv
-source helpers/venv/bin/activate
-pip install -r helpers/requirements.txt
-python helpers/generate-config.py --file helpers/hosts.txt --user ubuntu --owner bootstack
+virtualenv -p python3 scripts/venv
+source scripts/venv/bin/activate
+pip install -r scripts/requirements.txt
+python scripts/generate-config.py --file scripts/hosts.txt --user ubuntu --owner bootstack
 ```
 
 ## Loading configuration
