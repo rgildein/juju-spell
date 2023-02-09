@@ -8,6 +8,8 @@ import yaml
 from confuse import ConfigTypeError, ConfigView
 
 from juju_spell.config import (
+    API_ENDPOINT_REGEX,
+    DESTINATION_REGEX,
     SUBNET_REGEX,
     UUID_REGEX,
     Config,
@@ -27,6 +29,8 @@ from tests.unit.conftest import TEST_CONFIG, TEST_PERSONAL_CONFIG
         (r"^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$", "1.2.3.4"),
         (SUBNET_REGEX, "1.2.3.0/24"),
         (UUID_REGEX, "e53042ba-8ff5-456c-85b8-f7fef37bff5c"),
+        (DESTINATION_REGEX, "maas3.frodo-baggins.mordor"),
+        (API_ENDPOINT_REGEX, "10.1.1.177:17070"),  # test IPV4 endpoint
     ],
 )
 def test_string(regex, value):
@@ -148,6 +152,7 @@ def _update_test_config(
                 },  # controller 1
             ],
         ),
+        # test special destination
     ],
 )
 def test_validate_config(
