@@ -10,7 +10,7 @@ The config for JujuSpell continues list of controllers where each controller hav
 * `risk` [optional] risk level [1-5] used for filtering, where 5 is default value and the most risky
 * `endpoint` controller api endpoint (currently we are not supporting multiple api endpoints)
 * `ca_cert` certificate for controller
-* `username` username
+* `user` username
 * `password` password
 * `model_mapping` {lma, default} map model category to real name of the model
 * `connection` [optional] definition for remote clouds (sshuttle and port-forwarding)
@@ -46,6 +46,27 @@ controllers:
         - bastion
 ```
 
+## Generate configuration
+
+The tool provides a helper script to generate the config given a file containing a list of hosts.
+You need to have ssh access to the hosts in the file and have sudo access to cat the juju yaml configuration files
+in the home of the user specified with `--user`. You need to pass also `--owner` to specify the owner of the controllers
+pulled by the script.
+
+i.e.
+```commandline
+$ cat scripts/hosts.txt
+maas.node1.mycloud
+maas.node2.mycloud
+```
+
+Run the script with:
+```commandline
+virtualenv -p python3 scripts/venv
+source scripts/venv/bin/activate
+pip install -r scripts/requirements.txt
+python scripts/generate-config.py --file scripts/hosts.txt --user ubuntu --owner bootstack
+```
 
 ## Loading configuration
 
