@@ -115,7 +115,7 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
         """
         super().fill_parser(parser)
         parser.add_argument(
-            "--silent",
+            "--no-confirm",
             default=False,
             action="store_true",
             help="This will skip all the confirm check.",
@@ -184,7 +184,7 @@ class JujuWriteCMD(BaseJujuCMD, metaclass=ABCMeta):
 
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command for JujuCommands."""
-        if not parsed_args.silent and not confirm(
+        if not parsed_args.no_confirm and not confirm(
             text=f"Continue on cmd: {self.name} parsed_args: {parsed_args}",
             abort=self.abort,
         ):

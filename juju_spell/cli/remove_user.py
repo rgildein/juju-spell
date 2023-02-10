@@ -33,7 +33,7 @@ class RemoveUserCMD(JujuWriteCMD):
 
         Example:
         $ juju-spell remove-user --user newuser
-        Continue on cmd: remove-user parsed_args: Namespace(silent=False,
+        Continue on cmd: remove-user parsed_args: Namespace(no_confirm=False,
         run_type='serial', filter='', models=None, user='newuser')[Y/n]: y
         [
          {
