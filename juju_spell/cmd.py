@@ -1,4 +1,5 @@
 """Module combinates all the commands."""
+import argparse
 import contextlib
 import inspect
 import logging
@@ -20,7 +21,13 @@ from juju_spell import cli, utils
 from juju_spell.cli.base import JujuReadCMD, JujuWriteCMD
 from juju_spell.config import load_config
 from juju_spell.exceptions import JujuSpellError
-from juju_spell.settings import APP_NAME, APP_VERSION, CONFIG_PATH, PERSONAL_CONFIG_PATH
+from juju_spell.settings import (
+    APP_NAME,
+    APP_VERSION,
+    CONFIG_PATH,
+    CROSS_FINGERS,
+    PERSONAL_CONFIG_PATH,
+)
 
 GLOBAL_ARGS = [
     GlobalArgument(
@@ -29,6 +36,7 @@ GLOBAL_ARGS = [
     GlobalArgument(
         "config", "option", "-c", "--config", "Set the path to custom config."
     ),
+    GlobalArgument("cross-fingers", "flag", None, "--cross-fingers", argparse.SUPPRESS),
 ]
 
 
@@ -123,6 +131,11 @@ def _run_dispatcher(dispatcher: Dispatcher) -> None:
         emit.message(f"JujuSpell: {APP_VERSION}")
         if not filtered_params:
             return  # exit if no command was provided
+
+    # magic for --cross-fingers
+    if args.get("cross-fingers"):
+        sys.argv.append("--silent")  # add --silent
+        print(CROSS_FINGERS, file=sys.stdout)
 
     global_args = dispatcher.pre_parse_args(sys.argv[1:])
     if global_args.get("config"):
