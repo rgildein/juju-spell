@@ -81,7 +81,7 @@ def test_base_cmd_format_output(output, exp_formatted_output, base_cmd):
 
 @patch("juju_spell.cli.base.parse_filter")
 @patch("juju_spell.cli.base.parse_comma_separated_str")
-def test_base_juju_cmd_fill_parser(
+def test_base_juju_cmd_argument_has_calls(
     mock_parse_comma_separated_str, mock_parse_filter, base_juju_cmd
 ):
     """Test add additional CLI arguments with BaseJujuCMD."""
@@ -203,10 +203,10 @@ def test_juju_cmd_dry_run(
     parsed_args,
     executed,
     base_juju_cmd,
-    test_config,
+    test_config_dict,
 ):
     parsed_args = argparse.Namespace(**parsed_args)
     base_juju_cmd.safe_parsed_args_output = MagicMock()
-    mock_get_filtered_config.return_value = test_config
+    mock_get_filtered_config.return_value = test_config_dict
     base_juju_cmd.run(parsed_args)
     assert (base_juju_cmd.execute.call_count != 0) == executed
