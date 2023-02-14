@@ -43,7 +43,7 @@ async def test_get_filtered_models_mapping(
 ):
     """Test async models generator."""
     mock_controller = AsyncMock()
-    mock_controller.get_models.return_value = all_models
+    mock_controller.list_models.return_value = all_models
     mock_controller.get_model.return_value = mock_model = AsyncMock()
 
     models_generator = test_juju_command.get_filtered_models(
