@@ -7,8 +7,8 @@ import pytest
 @pytest.mark.parametrize(
     "all_models, args_models, exp_models, model_mappings",
     [
-        ([], ["test-model"], [], {}),
-        (["model1", "model2", "model3"], ["test-model"], [], {}),
+        ([], ["test-model"], ["test-model"], {}),
+        (["model1", "model2", "model3"], ["test-model"], ["test-model"], {}),
         (["model1", "model2", "model3"], ["model1"], ["model1"], {}),
         (
             ["model1", "model2", "model3"],
@@ -33,12 +33,12 @@ import pytest
         (
             ["model1", "model2", "model3"],
             ["default", "lma"],
-            [],
+            ["modelx", "modely"],
             {"lma": ["modelx"], "default": ["modely"]},
         ),
     ],
 )
-async def test_get_filtered_models_empty_mapping(
+async def test_get_filtered_models_mapping(
     all_models, args_models, exp_models, model_mappings, test_juju_command
 ):
     """Test async models generator."""
@@ -52,7 +52,7 @@ async def test_get_filtered_models_empty_mapping(
     models = [name async for name, _ in models_generator]
 
     # check returned models
-    assert models == exp_models
+    assert set(models) == set(exp_models)
     # check that model was get from controller
     mock_controller.get_model.assert_has_awaits(calls=[call(name) for name in models])
     # check that model was disconnected

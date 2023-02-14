@@ -51,13 +51,15 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
         If models is None, then all models for controller will be returned.
         """
-        all_models = await controller.get_models()
-        extended_models = _get_extended_models(models, model_mappings)
+        if models is None or len(models) <= 0:
+            all_models = await controller.list_models()
+        else:
+            all_models = _filter_models(models, model_mappings)
+
         for model_name in all_models:
-            if not extended_models or model_name in extended_models:
-                model = await controller.get_model(model_name)
-                yield model_name, model
-                await model.disconnect()
+            model = await controller.get_model(model_name)
+            yield model_name, model
+            await model.disconnect()
 
     async def pre_check(self, controller: Controller, **kwargs) -> Optional[Result]:
         """Run pre-check for command."""
@@ -107,21 +109,25 @@ class BaseJujuCommand(metaclass=ABCMeta):
         ...
 
 
-def _get_extended_models(models, model_mappings: Dict):
-    if models is None:
-        return None
+def _filter_models(
+    models: List[str], model_mappings: Dict[str, List[str]]
+) -> List[str]:
+    """Replace the models with values from model_mappings.
 
+    If --model parameter is provided searches the map for matching model, if found
+    puts the corresponding values from controller.model_mapping into results if not
+    found puts the model itself to results.
+    Args:
+        models: list of models from input
+        model_mappings: mappings from config file
+    Returns:
+        list of models replaced with values from model_mappings
+    """
     if model_mappings is None or len(model_mappings) <= 0:
         return models
 
     results = []
     for model in models:
-        if items := model_mappings.get(model):
-            results.extend(items)
-        else:
-            results.append(model)
+        results.extend(model_mappings.get(model, [model]))
 
-    if len(results) > 0:
-        return results
-
-    return None
+    return results
