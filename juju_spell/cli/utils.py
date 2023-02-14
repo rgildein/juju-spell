@@ -63,8 +63,8 @@ def confirm(
     """
     if not sys.stdin.isatty():
         raise JujuSpellError(
-            "Could not confirm without terminal session. Please use `--silent` or run "
-            "in virtual terminal session."
+            "Could not confirm without terminal session. Please use `--no-confirm` or"
+            "run in virtual terminal session."
         )
 
     choices: str = "Y/n" if default else "N/y"

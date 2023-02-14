@@ -134,7 +134,7 @@ def _run_dispatcher(dispatcher: Dispatcher) -> None:
 
     # magic for --cross-fingers
     if args.get("cross-fingers"):
-        sys.argv.append("--silent")  # add --silent
+        sys.argv.append("--no-confirm")  # add --no-confirm
         print(CROSS_FINGERS, file=sys.stdout)
 
     global_args = dispatcher.pre_parse_args(sys.argv[1:])

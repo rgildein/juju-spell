@@ -42,7 +42,7 @@ class AddUserCMD(JujuWriteCMD):
 
         Example:
         $ juju-spell add-user --user newuser
-        Continue on cmd: add-user parsed_args: Namespace(silent=False,
+        Continue on cmd: add-user parsed_args: Namespace(no_confirm=False,
         run_type='serial', filter='', models=None, user='newuser', display_name=None,
         password=None)[Y/n]: y
         Password(If empty will use random password):

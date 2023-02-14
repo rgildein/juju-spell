@@ -91,7 +91,7 @@ def test_base_juju_cmd_argument_has_calls(
     parser.add_argument.assert_has_calls(
         [
             mock.call(
-                "--silent",
+                "--no-confirm",
                 default=False,
                 action="store_true",
                 help="This will skip all the confirm check.",
@@ -168,10 +168,10 @@ def _create_test_controller(name: str) -> Controller:
 @pytest.mark.parametrize(
     "parsed_args, confirm_return_value, executed",
     [
-        ({"silent": False}, True, True),
-        ({"silent": False}, False, False),
-        ({"silent": True}, True, True),
-        ({"silent": True}, False, True),
+        ({"no_confirm": False}, True, True),
+        ({"no_confirm": False}, False, False),
+        ({"no_confirm": True}, True, True),
+        ({"no_confirm": True}, False, True),
     ],
 )
 @patch("juju_spell.cli.base.BaseJujuCMD.run")

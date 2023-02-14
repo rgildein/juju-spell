@@ -32,7 +32,7 @@ class GrantCMD(JujuWriteCMD):
 
         Example:
         $ juju-spell grant --user newuser --acl superuser
-        Continue on cmd: grant parsed_args: Namespace(silent=False,
+        Continue on cmd: grant parsed_args: Namespace(no_confirm=False,
         run_type='serial', filter='', models=None, user='newuser',
         acl='superuser')[Y/n]: y
         [
