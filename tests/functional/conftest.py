@@ -19,6 +19,7 @@ import os
 import subprocess
 from pathlib import Path
 from typing import Callable, Generator
+from uuid import uuid4
 
 import pylxd.models
 import pytest
@@ -30,8 +31,9 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_SERIES = "jammy"
-CLIENT_CONAINER = pytest.StashKey[str]()
-CONTROLLERS_CONTAINERS = pytest.StashKey[list]()
+CLIENT_CONAINER_KEY = pytest.StashKey[str]()
+CONTROLLERS_CONTAINERS_KEY = pytest.StashKey[list]()
+SESSION_UUID_KEY = pytest.StashKey[str]()
 
 
 def check_dependencies(*dependencies) -> None:
@@ -72,29 +74,44 @@ def pytest_addoption(parser):
     parser.addoption(
         "--no-build", action="store_false", help="flag to disable building new snap"
     )
+    parser.addoption(
+        "--keep-env",
+        action="store_false",
+        help="flag to disable environment destroyment",
+    )
 
 
 def pytest_configure(config):
     """Configure environment."""
     series = config.getoption("series")
     build = config.getoption("no_build")
+    keep_env = config.getoption("keep_env")
+    session_uuid = str(uuid4())[:8]  # short version of uuid
 
     check_dependencies("juju", "lxd", "snapcraft")
     snap_path = build_snap(build)
     try:
-        client, controllers = setup_environment(series, snap_path)
-        config.stash[CLIENT_CONAINER] = client
-        config.stash[CONTROLLERS_CONTAINERS] = controllers
-        config.add_cleanup(cleanup_environment)
+        client, controllers = setup_environment(session_uuid, series, snap_path)
+        config.stash[SESSION_UUID_KEY] = session_uuid
+        config.stash[CLIENT_CONAINER_KEY] = client
+        config.stash[CONTROLLERS_CONTAINERS_KEY] = controllers
+        # Note (rgildein): function add_cleanup does not supports args or kwargs
+        config.add_cleanup(lambda: cleanup_environment(session_uuid, keep_env))
     except Exception:
-        cleanup_environment()
+        cleanup_environment(session_uuid, keep_env)
         raise
+
+
+@pytest.fixture
+def session_uuid(pytestconfig) -> str:
+    """Get session uuid."""
+    return pytestconfig.stash[SESSION_UUID_KEY]
 
 
 @pytest.fixture
 def client(pytestconfig, tmp_path, controllers) -> pylxd.models.Instance:
     """Return LXD container where JujuSpell is installed."""
-    name = pytestconfig.stash[CLIENT_CONAINER]
+    name = pytestconfig.stash[CLIENT_CONAINER_KEY]
     client = Client()
     return client.instances.get(name)
 
@@ -102,7 +119,7 @@ def client(pytestconfig, tmp_path, controllers) -> pylxd.models.Instance:
 @pytest.fixture
 def controllers(pytestconfig) -> Generator[pylxd.models.Instance, None, None]:
     """Return LXD containers for controllers."""
-    controllers = pytestconfig.stash[CONTROLLERS_CONTAINERS]
+    controllers = pytestconfig.stash[CONTROLLERS_CONTAINERS_KEY]
     client = Client()
 
     return (client.instances.get(name) for name in controllers)

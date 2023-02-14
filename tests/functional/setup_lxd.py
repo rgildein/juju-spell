@@ -15,11 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """JujuSpell configuration for functional tests."""
 import json
-import random
 import subprocess
 import textwrap
 from pathlib import Path
-from string import ascii_lowercase
 from time import sleep
 from typing import Any, Dict, List, Tuple, Union
 
@@ -29,7 +27,7 @@ from pylxd.models import Container, Instance
 
 from juju_spell.config import convert_config
 
-CONTAINER_PREFIX = "JujuSpell"
+CONTAINER_PREFIX = "jujuspell"
 DEFAULT_DIRECTORY = Path("/home/ubuntu/.local/share/juju-spell")
 SSH_CONFIG = textwrap.dedent(
     """
@@ -39,11 +37,6 @@ Host *
 )
 CONTROLLER_API_PORT = 17007
 NUMBER_OF_CONTROLLERS = 2
-
-
-def get_uuid(length: int) -> str:
-    """Get random uuid."""
-    return "".join(random.choice(ascii_lowercase) for _ in range(length))
 
 
 def get_controller(name: str) -> Dict[str, Any]:
@@ -66,10 +59,10 @@ def try_unregister_controller(name: str) -> None:
         print(f"Juju: controller {name} was unregistered")
 
 
-def create_container(name: str, series: str) -> Container:
+def create_container(session_uuid: str, name: str, series: str) -> Container:
     """Create instance."""
     client = Client()
-    container_name = f"{CONTAINER_PREFIX}-{name}-{get_uuid(5)}"
+    container_name = f"{CONTAINER_PREFIX}-{name}-{session_uuid}"
     config = {
         "name": container_name,
         "source": {
@@ -89,9 +82,11 @@ def create_container(name: str, series: str) -> Container:
     return container
 
 
-def create_client_instance(series: str, snap_path: Union[str, Path]) -> Instance:
+def create_client_instance(
+    session_uuid: str, series: str, snap_path: Union[str, Path]
+) -> Instance:
     """Create client instance."""
-    client = create_container("client", series)
+    client = create_container(session_uuid, "client", series)
     sleep(5)  # TODO: we need to wait for container to be fully readyx
     client.execute(["sudo", "ufw", "enable"], user=1000)
     # drop direct connection to any controller, e.g. <ip>:CONTROLLER_API_PORT
@@ -137,10 +132,10 @@ def boostrap_controller(name: str, series: str, ssh_key: str) -> Instance:
         ]
     )
     info = subprocess.check_output(
-        ["juju", "show-controller", name.lower(), "--format", "json"]
+        ["juju", "show-controller", name, "--format", "json"]
     ).decode()
     info = json.loads(info)
-    instance_id = info[name.lower()]["controller-machines"]["0"]["instance-id"]
+    instance_id = info[name]["controller-machines"]["0"]["instance-id"]
     client = Client()
     # ranme controller container so we can easily access it a remove it later
     controller = client.instances.get(instance_id)
@@ -155,14 +150,14 @@ def boostrap_controller(name: str, series: str, ssh_key: str) -> Instance:
 
 
 def setup_environment(
-    series: str, snap_path: Union[str, Path]
+    session_uuid: str, series: str, snap_path: Union[str, Path]
 ) -> Tuple[str, List[str]]:
     """Set up LXD environment.
 
     Creates client with JujuSpell installed and NUMBER_OF_CONTROLLERS for testing.
     """
     # JujuSpell client
-    client = create_client_instance(series, snap_path)  # JujuSpell client
+    client = create_client_instance(session_uuid, series, snap_path)  # JujuSpell client
     client_ssh_key = client.execute(
         ["cat", "/home/ubuntu/.ssh/id_rsa.pub"], user=1000
     ).stdout.strip()
@@ -172,15 +167,15 @@ def setup_environment(
 
     # controllers
     controllers = []
-    for _ in range(NUMBER_OF_CONTROLLERS):
-        name = f"{CONTAINER_PREFIX}-controller-{get_uuid(5)}"
+    for i in range(NUMBER_OF_CONTROLLERS):
+        name = f"{CONTAINER_PREFIX}-controller-{i}-{session_uuid}"
         controller = boostrap_controller(name, series, client_ssh_key)
         controllers.append(controller.name)
 
     # creates JujuSpell config
     config = {"controllers": []}
     for controller in controllers:
-        info = convert_config(get_controller(controller.lower()))
+        info = convert_config(get_controller(controller))
         ip_address, _ = info["endpoint"].split(":")
         config["controllers"].append(
             {
@@ -198,17 +193,22 @@ def setup_environment(
     return client.name, controllers
 
 
-def cleanup_environment():
+def cleanup_environment(session_uuid: str, keep_env: bool = False):
     """Clean up LXD environment.
 
     Remove all instances with names starting with CONTAINER_PREFIX.
     """
     client = Client()
     for instance in client.instances.all():
-        if instance.name.startswith(CONTAINER_PREFIX):
-            if instance.status_code != 102:  # check if instance is not already stopped
-                instance.stop(wait=True)
+        if str(session_uuid) in instance.name:
+            if keep_env:
+                if (
+                    instance.status_code != 102
+                ):  # check if instance is not already stopped
+                    instance.stop(wait=True)
 
-            instance.delete()
-            print(f"LXD: {instance.name} was removed")
-            try_unregister_controller(instance.name.lower())
+                instance.delete()
+                print(f"LXD: {instance.name} was removed")
+                try_unregister_controller(instance.name)
+            else:
+                print(f"LXD: {instance.name} was kept for further testing")
