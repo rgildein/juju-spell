@@ -56,6 +56,18 @@ class BaseJujuCommand(metaclass=ABCMeta):
                 yield model_name, model
                 await model.disconnect()
 
+    async def pre_check(self, controller: Controller, **kwargs) -> Optional[Result]:
+        """Run pre-check for command."""
+        self.logger.debug("%s running pre-check", controller.controller_uuid)
+        if not controller.is_connected():
+            self.logger.info(
+                "%s pre-check: controller is connected",
+                controller.controller_uuid,
+            )
+            return Result(
+                False, error=f"controller {controller.controller_uuid} is not connected"
+            )
+
     async def run(self, controller: Controller, **kwargs) -> Result:
         """Execute Juju command.
 

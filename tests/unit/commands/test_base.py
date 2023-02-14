@@ -27,6 +27,29 @@ class TestBaseJujuCommand:
         assert test_juju_command.logger.name == test_juju_command.name
 
     @pytest.mark.asyncio
+    async def test_pre_check(self, test_juju_command):
+        """Test pre_check function."""
+        controller = mock.MagicMock()
+        controller.is_connected.return_value = True
+
+        result = await test_juju_command.pre_check(controller)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_pre_check_failed(self, test_juju_command):
+        """Test failure of pre_check function."""
+        controller = mock.MagicMock()
+        controller.controller_uuid = "1234"
+        controller.is_connected.return_value = False
+
+        result = await test_juju_command.pre_check(controller)
+
+        assert result is not None
+        assert result.success is False
+        assert result.error == "controller 1234 is not connected"
+
+    @pytest.mark.asyncio
     async def test_run(self, test_juju_command):
         """Test run function."""
         test_juju_command.execute.return_value = exp_output = {"test": "value"}
