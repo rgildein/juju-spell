@@ -40,8 +40,8 @@ controllers:
         1234
         -----END CERTIFICATE-----
     model_mapping:
-      lma: monitoring
-      default: production
+      lma: [ "monitoring" ]
+      default: [ "production" ]
 """
 
 TEST_PERSONAL_CONFIG = """
@@ -72,8 +72,8 @@ controllers:
         1234
         -----END CERTIFICATE-----
     model_mapping:
-      lma: monitoring
-      default: production
+      lma: [ "monitoring" ]
+      default: [ "production" ]
     connection:
       destination: ubuntu@10.1.1.99
       subnets:  # optional (sshuttle)
@@ -93,8 +93,8 @@ controllers:
         1234
         -----END CERTIFICATE-----
     model_mapping:
-      lma: monitoring
-      default: production
+      lma: [ "monitoring" ]
+      default: [ "production" ]
     user: admin
     password: pass1234
 """

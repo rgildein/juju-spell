@@ -5,18 +5,41 @@ import pytest
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "all_models, args_models, exp_models",
+    "all_models, args_models, exp_models, model_mappings",
     [
-        ([], ["test-model"], []),
-        (["model1", "model2", "model3"], ["test-model"], []),
-        (["model1", "model2", "model3"], ["model1"], ["model1"]),
-        (["model1", "model2", "model3"], ["model1", "model2"], ["model1", "model2"]),
-        (["model1", "model2", "model3"], [], ["model1", "model2", "model3"]),
-        (["model1", "model2", "model3"], None, ["model1", "model2", "model3"]),
+        ([], ["test-model"], [], {}),
+        (["model1", "model2", "model3"], ["test-model"], [], {}),
+        (["model1", "model2", "model3"], ["model1"], ["model1"], {}),
+        (
+            ["model1", "model2", "model3"],
+            ["model1", "model2"],
+            ["model1", "model2"],
+            {},
+        ),
+        (["model1", "model2", "model3"], [], ["model1", "model2", "model3"], {}),
+        (["model1", "model2", "model3"], None, ["model1", "model2", "model3"], {}),
+        (
+            ["model1", "model2", "model3"],
+            ["default"],
+            ["model1"],
+            {"lma": ["monitoring"], "default": ["model1"]},
+        ),
+        (
+            ["model1", "model2", "model3"],
+            ["default", "lma"],
+            ["model1", "model2"],
+            {"lma": ["model1"], "default": ["model2"]},
+        ),
+        (
+            ["model1", "model2", "model3"],
+            ["default", "lma"],
+            [],
+            {"lma": ["modelx"], "default": ["modely"]},
+        ),
     ],
 )
-async def test_get_filtered_models(
-    all_models, args_models, exp_models, test_juju_command
+async def test_get_filtered_models_empty_mapping(
+    all_models, args_models, exp_models, model_mappings, test_juju_command
 ):
     """Test async models generator."""
     mock_controller = AsyncMock()
@@ -24,7 +47,7 @@ async def test_get_filtered_models(
     mock_controller.get_model.return_value = mock_model = AsyncMock()
 
     models_generator = test_juju_command.get_filtered_models(
-        mock_controller, args_models
+        mock_controller, model_mappings, args_models
     )
     models = [name async for name, _ in models_generator]
 

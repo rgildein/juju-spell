@@ -18,7 +18,7 @@
 import dataclasses
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, AsyncGenerator, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
 from juju.controller import Controller
 from juju.model import Model
@@ -43,15 +43,18 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
     @staticmethod
     async def get_filtered_models(
-        controller: Controller, models: Optional[List[str]] = None
+        controller: Controller,
+        model_mappings: Dict,
+        models: Optional[List[str]] = None,
     ) -> AsyncGenerator[Tuple[str, Model], None]:
         """Get filtered models for controller.
 
         If models is None, then all models for controller will be returned.
         """
         all_models = await controller.get_models()
+        extended_models = _get_extended_models(models, model_mappings)
         for model_name in all_models:
-            if not models or model_name in models:
+            if not extended_models or model_name in extended_models:
                 model = await controller.get_model(model_name)
                 yield model_name, model
                 await model.disconnect()
@@ -102,3 +105,23 @@ class BaseJujuCommand(metaclass=ABCMeta):
                 will contain the config for the selected controller
         """
         ...
+
+
+def _get_extended_models(models, model_mappings: Dict):
+    if models is None:
+        return None
+
+    if model_mappings is None or len(model_mappings) <= 0:
+        return models
+
+    results = []
+    for model in models:
+        if items := model_mappings.get(model):
+            results.extend(items)
+        else:
+            results.append(model)
+
+    if len(results) > 0:
+        return results
+
+    return None
