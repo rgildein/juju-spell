@@ -44,7 +44,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
     @staticmethod
     async def get_filtered_models(
         controller: Controller,
-        model_mappings: Dict,
+        model_mappings: Dict[str, List[str]],
         models: Optional[List[str]] = None,
     ) -> AsyncGenerator[Tuple[str, Model], None]:
         """Get filtered models for controller.
