@@ -164,5 +164,7 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
       - name: Run tests on ${{ matrix.series }} series
         run: tox -e func -- --series ${{ matrix.series }}
