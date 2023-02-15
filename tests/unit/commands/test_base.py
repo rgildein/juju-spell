@@ -27,6 +27,18 @@ class TestBaseJujuCommand:
         assert test_juju_command.logger.name == test_juju_command.name
 
     @pytest.mark.asyncio
+    async def test_dry_run(self, test_juju_command):
+        controller = mock.MagicMock()
+        controller.controller_uuid = "abc"
+        test_juju_command.execute.__doc__ = "exec_doc"
+        result = await test_juju_command.dry_run(controller)
+        assert result.success
+        assert result.output == {
+            "target": "abc",
+            "command_doc": "exec_doc",
+        }
+
+    @pytest.mark.asyncio
     async def test_pre_check(self, test_juju_command):
         """Test pre_check function."""
         controller = mock.MagicMock()
