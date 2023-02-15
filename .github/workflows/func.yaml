@@ -23,7 +23,7 @@ jobs:
           CURRENT_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           function get_last_workflow() {
-            # get all previus workflows for "test_full.yml" file and current branch
+            # get all previous workflows for "test_full.yml" file and current branch
             _workflows=$(curl -H "Accept: application/vnd.github.v3+json" "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/tests_full.yml/runs?branch=$CURRENT_BRANCH")
             # clear unsupported characters
             _workflows_safe=$(echo "$_workflows" | tr "\r" " " | tr "\n" " " | tr "\t" " ")
@@ -69,10 +69,10 @@ jobs:
         id: skip-func-tests
         run: |
           git remote add upstream $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
-          git fetch upstream master
+          git fetch upstream main
 
           changed=0
-          git diff --name-only upstream/master | grep -qE '^(juju_spell/|tests/functional/)' || changed=1
+          git diff --name-only upstream/main | grep -qE '^(juju_spell/|tests/functional/)' || changed=1
           echo "::set-output name=skip::$changed"
           if [ $changed == 0 ]
           then
@@ -159,7 +159,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
       - name: Setup operator environment
         uses: charmed-kubernetes/actions-operator@main
         with:
