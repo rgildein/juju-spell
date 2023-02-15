@@ -39,11 +39,11 @@ SESSION_UUID_KEY = pytest.StashKey[str]()
 def check_dependencies(*dependencies) -> None:
     """Check if dependencies are installed."""
     errors = []
-    for dependence in dependencies:
+    for dependency in dependencies:
         try:
-            subprocess.check_output(["which", dependence])
+            subprocess.check_output(["which", dependency])
         except subprocess.CalledProcessError:
-            errors.append(f"Missing {dependence} dependency.")
+            errors.append(f"Missing {dependency} dependency.")
 
     if errors:
         raise RuntimeError(os.linesep.join(errors))
@@ -130,8 +130,13 @@ def juju_spell_run(client) -> Callable:
     """Return Callable function to execute JujuSpell command."""
 
     def wrapper(*args):
-        return client.execute(
+        result = client.execute(
             ["juju-spell", *args], user=1000, group=1000, cwd="/home/ubuntu"
         )
+        print(
+            f"LXD: command {args} finished with exit_code {result.exit_code}"
+            f"{os.linesep}stdout: {result.stdout}{os.linesep}stderr: {result.stderr}"
+        )
+        return result
 
     return wrapper

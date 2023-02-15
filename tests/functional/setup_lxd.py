@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """JujuSpell configuration for functional tests."""
 import json
+import os
 import subprocess
 import textwrap
 from pathlib import Path
@@ -23,7 +24,9 @@ from typing import Any, Dict, List, Tuple, Union
 
 import yaml
 from pylxd import Client
+from pylxd.exceptions import NotFound
 from pylxd.models import Container, Instance
+from pylxd.models.instance import _InstanceExecuteResult
 
 from juju_spell.config import convert_config
 
@@ -37,6 +40,13 @@ Host *
 )
 CONTROLLER_API_PORT = 17007
 NUMBER_OF_CONTROLLERS = 2
+STOPPED_CONTAINER_CODE = 102
+WAIT_TIMEOUT = 1
+WAIT_COUNT = 10
+
+
+class ExecuteError(Exception):
+    ...
 
 
 def get_controller(name: str) -> Dict[str, Any]:
@@ -45,6 +55,47 @@ def get_controller(name: str) -> Dict[str, Any]:
         ["juju", "show-controller", "--show-password", "--format", "json", name]
     ).decode()
     return json.loads(output)
+
+
+def lxd_execute(
+    container: Instance, cmd: List[str], root: bool = False
+) -> _InstanceExecuteResult:
+    """Execute on container."""
+    kwargs = {}
+    command = " ".join(cmd)
+    if not root:
+        kwargs["user"] = 1000
+        kwargs["group"] = 1000
+        kwargs["cwd"] = "/home/ubuntu"
+
+    result = container.execute(cmd, **kwargs)
+    print(
+        f"LXD: {container.name} command `{command}` exit with {result.exit_code}"
+        f"{os.linesep}  stdout: {result.stdout}{os.linesep}  stderr: {result.stderr}"
+    )
+    if result.exit_code != 0:
+        raise ExecuteError(f"command `{command}` falied with error: {result.stderr}")
+
+    return result
+
+
+def is_alive(container: Instance) -> bool:
+    """Check if container is alive."""
+    try:
+        lxd_execute(container, ["sudo", "snap", "refresh"])
+        return True
+    except (NotFound, ExecuteError):
+        return False
+
+
+def wait_for_container(container: Instance) -> None:
+    """Wait for container to become alive."""
+    for _ in range(WAIT_COUNT):
+        sleep(WAIT_TIMEOUT)
+        if is_alive(container):
+            break
+
+    print(f"LXD: container {container.name} is ready")
 
 
 def try_unregister_controller(name: str) -> None:
@@ -87,27 +138,23 @@ def create_client_instance(
 ) -> Instance:
     """Create client instance."""
     client = create_container(session_uuid, "client", series)
-    sleep(5)  # TODO: we need to wait for container to be fully readyx
-    client.execute(["sudo", "ufw", "enable"], user=1000)
+    wait_for_container(client)
+
+    lxd_execute(client, ["sudo", "ufw", "enable"])
     # drop direct connection to any controller, e.g. <ip>:CONTROLLER_API_PORT
-    client.execute(["sudo", "ufw", "deny", "out", str(CONTROLLER_API_PORT)], user=1000)
-    client.execute(
-        ["ssh-keygen", "-q", "-f", "/home/ubuntu/.ssh/id_rsa", "-N", ""], user=1000
+    lxd_execute(client, ["sudo", "ufw", "deny", "out", str(CONTROLLER_API_PORT)])
+    lxd_execute(
+        client, ["ssh-keygen", "-q", "-f", "/home/ubuntu/.ssh/id_rsa", "-N", ""]
     )
     with open(snap_path, "rb") as snap:
         client.files.put(
             "/home/ubuntu/juju-spell.snap", snap.read(), uid=1000, gid=1000
         )
 
-    client.execute(
-        ["sudo", "snap", "install", "./juju-spell.snap", "--devmode"],
-        user=1000,
-        cwd="/home/ubuntu",
-    )
-
+    lxd_execute(client, ["sudo", "snap", "install", "./juju-spell.snap", "--devmode"])
     # NOTE (rgildein): Right now JujuSpell is not creating `.local/share/juju-spell`
     # directory, so we need to create it
-    client.execute(["mkdir", "-p", str(DEFAULT_DIRECTORY)], user=1000)
+    lxd_execute(client, ["mkdir", "-p", str(DEFAULT_DIRECTORY)])
 
     return client
 
@@ -139,9 +186,8 @@ def boostrap_controller(name: str, series: str, ssh_key: str) -> Instance:
     client = Client()
     # ranme controller container so we can easily access it a remove it later
     controller = client.instances.get(instance_id)
-    controller.execute(
-        ["sh", "-c", f"echo '{ssh_key}'>>/home/ubuntu/.ssh/authorized_keys"],
-        user=1000,
+    lxd_execute(
+        controller, ["sh", "-c", f"echo '{ssh_key}'>>/home/ubuntu/.ssh/authorized_keys"]
     )
     controller.stop(wait=True)
     controller.rename(name, wait=True)
@@ -158,8 +204,8 @@ def setup_environment(
     """
     # JujuSpell client
     client = create_client_instance(session_uuid, series, snap_path)  # JujuSpell client
-    client_ssh_key = client.execute(
-        ["cat", "/home/ubuntu/.ssh/id_rsa.pub"], user=1000
+    client_ssh_key = lxd_execute(
+        client, ["cat", "/home/ubuntu/.ssh/id_rsa.pub"]
     ).stdout.strip()
     # Note(rgildein): Right now our connection could not accept ssh key
     # automaticaly, that's why we need to do this
@@ -202,9 +248,8 @@ def cleanup_environment(session_uuid: str, keep_env: bool = False):
     for instance in client.instances.all():
         if str(session_uuid) in instance.name:
             if keep_env:
-                if (
-                    instance.status_code != 102
-                ):  # check if instance is not already stopped
+                # check if instance is not already stopped
+                if instance.status_code != STOPPED_CONTAINER_CODE:
                     instance.stop(wait=True)
 
                 instance.delete()
