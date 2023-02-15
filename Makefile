@@ -55,7 +55,7 @@ dev-environment:
 
 functional: build
 	@echo "Executing functional tests using built snap"
-	# @TEST_SNAP=${SNAP_FILE} tox -e func -- ${FUNC_ARGS}
+	@TEST_SNAP=${SNAP_FILE} tox -e func -- ${FUNC_ARGS}
 
 pre-commit:
 	@tox -e pre-commit

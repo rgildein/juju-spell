@@ -51,8 +51,9 @@ def check_dependencies(*dependencies) -> None:
 
 def build_snap(build: bool) -> Path:
     """Build JujuSpell snap."""
-    path = Path("juju-spell.snap")
-    if build:
+    path = Path(os.environ.get("TEST_SNAP", "./juju-spell.snap"))
+
+    if build and "TEST_SNAP" not in os.environ:
         print("snapcraft: building JujuSpell")
         subprocess.check_output(["snapcraft", "pack"])
         subprocess.check_output(["bash", "rename.sh"])
