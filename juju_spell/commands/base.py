@@ -50,11 +50,13 @@ class BaseJujuCommand(metaclass=ABCMeta):
         """Get filtered models for controller.
 
         If models is None, then all models for controller will be returned.
+        If the model_mapping[model] exits for specific model it will be replaced by the
+        list of values from model_mapping[model] from config.
         """
         if models is None or len(models) <= 0:
             all_models = await controller.list_models()
         else:
-            all_models = _filter_models(models, model_mappings)
+            all_models = _apply_model_mappings(models, model_mappings)
 
         for model_name in all_models:
             model = await controller.get_model(model_name)
@@ -109,7 +111,7 @@ class BaseJujuCommand(metaclass=ABCMeta):
         ...
 
 
-def _filter_models(
+def _apply_model_mappings(
     models: List[str], model_mappings: Dict[str, List[str]]
 ) -> List[str]:
     """Replace the models with values from model_mappings.
