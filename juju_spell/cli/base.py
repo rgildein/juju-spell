@@ -22,7 +22,6 @@ import os
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-import yaml
 from craft_cli import BaseCommand, emit
 from craft_cli.dispatcher import _CustomArgumentParser
 
@@ -42,18 +41,12 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
         self.config: Optional[Config] = None  # to overwrite config type hinting
         super().__init__(config)
 
-    def dry_run(self, parsed_args: argparse.Namespace):
-        emit.message(f"CMD: {self.name}")
-
     def run(self, parsed_args: argparse.Namespace) -> Optional[int]:
         """Execute CLI command.
 
         **This function should not be changed.**
         """
         try:
-            if parsed_args.dry_run:
-                self.dry_run(parsed_args)
-                return 0
             self.before(parsed_args)
             emit.trace(f"function 'before' was run for {self.name} command")
             retval = self.execute(parsed_args)
@@ -96,7 +89,10 @@ class BaseCMD(BaseCommand, metaclass=ABCMeta):
             "--dry-run",
             default=False,
             action="store_true",
-            help="Dry-run",
+            help=(
+                "This will only run pre-check and dry-run only instead of real"
+                " execution."
+            ),
         )
 
 
@@ -153,24 +149,6 @@ class BaseJujuCMD(BaseCMD, metaclass=ABCMeta):
         task = loop.create_task(run(filtered_config, self.command(), parsed_args))
         loop.run_until_complete(asyncio.gather(task))
         return task.result()
-
-    def dry_run(self, parsed_args: argparse.Namespace) -> None:
-        """Print the cmd, targets and execute doc."""
-        super().dry_run(parsed_args)
-        filtered_config = get_filtered_config(self.config, parsed_args.filter)
-        controller_infos = [
-            {
-                "uuid": controller.uuid,
-                "name": controller.name,
-                "endpoint": controller.endpoint,
-            }
-            for controller in filtered_config.controllers
-        ]
-        emit.message(
-            f"{self.command.execute.__doc__} {os.linesep}"
-            f"Targets:{os.linesep}"
-            f"{yaml.dump(controller_infos)}"
-        )
 
 
 class JujuReadCMD(BaseJujuCMD, metaclass=ABCMeta):

@@ -75,6 +75,17 @@ class BaseJujuCommand(metaclass=ABCMeta):
                 False, error=f"controller {controller.controller_uuid} is not connected"
             )
 
+    async def dry_run(self, controller: Controller, **kwargs) -> Optional[Result]:
+        """Dry-run will output the necessary information of the target."""
+        self.logger.info("%s running dry-run", controller.controller_uuid)
+        return Result(
+            success=True,
+            output={
+                "target": controller.controller_uuid,
+                "command_doc": self.execute.__doc__,
+            },
+        )
+
     async def run(self, controller: Controller, **kwargs) -> Result:
         """Execute Juju command.
 
