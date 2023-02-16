@@ -15,7 +15,9 @@ class StatusCommand(BaseJujuCommand):
         """Get status for selected models in controller."""
         output = {}
         async for name, model in self.get_filtered_models(
-            controller, models, kwargs["controller_config"].model_mapping
+            controller=controller,
+            models=models,
+            model_mappings=kwargs["controller_config"].model_mapping,
         ):
             status = await model.get_status()
             self.logger.debug(
