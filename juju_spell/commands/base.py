@@ -18,7 +18,7 @@
 import dataclasses
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, AsyncGenerator, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
 from juju.controller import Controller
 from juju.model import Model
@@ -43,18 +43,25 @@ class BaseJujuCommand(metaclass=ABCMeta):
 
     @staticmethod
     async def get_filtered_models(
-        controller: Controller, models: Optional[List[str]] = None
+        controller: Controller,
+        model_mappings: Dict[str, List[str]],
+        models: Optional[List[str]] = None,
     ) -> AsyncGenerator[Tuple[str, Model], None]:
         """Get filtered models for controller.
 
         If models is None, then all models for controller will be returned.
+        If the model_mapping[model] exits for specific model it will be replaced by the
+        list of values from model_mapping[model] from config.
         """
-        all_models = await controller.get_models()
+        if models is None or len(models) <= 0:
+            all_models = await controller.list_models()
+        else:
+            all_models = _apply_model_mappings(models, model_mappings)
+
         for model_name in all_models:
-            if not models or model_name in models:
-                model = await controller.get_model(model_name)
-                yield model_name, model
-                await model.disconnect()
+            model = await controller.get_model(model_name)
+            yield model_name, model
+            await model.disconnect()
 
     async def pre_check(self, controller: Controller, **kwargs) -> Optional[Result]:
         """Run pre-check for command."""
@@ -102,3 +109,24 @@ class BaseJujuCommand(metaclass=ABCMeta):
                 will contain the config for the selected controller
         """
         ...
+
+
+def _apply_model_mappings(
+    models: List[str], model_mappings: Dict[str, List[str]]
+) -> List[str]:
+    """Replace the models with values from model_mappings.
+
+    If --model parameter is provided searches the map for matching model, if found
+    puts the corresponding values from controller.model_mapping into results if not
+    found puts the model itself to results.
+    Args:
+        models: list of models from input
+        model_mappings: mappings from config file
+    Returns:
+        list of models replaced with values from model_mappings
+    """
+    results = []
+    for model in models:
+        results.extend(model_mappings.get(model, [model]))
+
+    return results

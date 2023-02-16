@@ -132,8 +132,8 @@ JUJUSPELL_CONFIG_TEMPLATE = confuse.MappingTemplate(
                     "password": str,
                     "model_mapping": confuse.MappingTemplate(
                         {
-                            "lma": confuse.Optional(str),
-                            "default": confuse.Optional(str),
+                            "lma": confuse.Optional(confuse.Sequence(str)),
+                            "default": confuse.Optional(confuse.Sequence(str)),
                         }
                     ),
                     "connection": confuse.Optional(
@@ -185,7 +185,7 @@ class Controller:
     ca_cert: str
     user: str
     password: str
-    model_mapping: Dict[str, str]
+    model_mapping: Dict[str, List[str]]
     # optional attributes and attributes with default value
     description: Optional[str] = None
     tags: Optional[List[str]] = None

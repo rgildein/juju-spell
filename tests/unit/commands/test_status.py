@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from juju_spell.commands.status import StatusCommand
+from juju_spell.config import Controller
 
 
 async def _async_generator(values: List) -> AsyncGenerator:
@@ -17,10 +18,14 @@ async def _async_generator(values: List) -> AsyncGenerator:
 async def test_execute(mocked_models):
     """Test execute function for StatusCommand."""
     models = [("model1", AsyncMock()), ("model2", AsyncMock())]
+    contoller_config = MagicMock(Controller)
+    contoller_config.model_mapping = None
     mocked_models.return_value = _async_generator(models)
     status = StatusCommand()
 
-    results = await status.execute(MagicMock())
+    results = await status.execute(
+        MagicMock(), models, **{"controller_config": contoller_config}
+    )
 
     assert len(results) == len(models)
     for name, model in models:
