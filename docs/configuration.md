@@ -12,7 +12,7 @@ The config for JujuSpell continues list of controllers where each controller hav
 * `ca_cert` certificate for controller
 * `user` username
 * `password` password
-* `model_mapping` {lma, default} map model category to real name of the model
+* `model_mapping` [optional] {lma, default} map model category to real name of the model
 * `connection` [optional] definition for remote clouds (sshuttle and port-forwarding)
   * `destination` remote destination accessible with ssh
   * `subnets` [optional] list of subnets, this option will be used with sshuttle enabled
@@ -51,7 +51,7 @@ controllers:
 
 ## Default config
 
-The key inside *default* will provide the default value to `{key}s` if the value is not exists.
+The key inside *default* will provide the default value to `controller` if the value is not exists.
 
 ## Generate configuration
 
