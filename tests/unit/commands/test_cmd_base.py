@@ -36,6 +36,12 @@ import pytest
             ["modelx", "modely"],
             {"lma": ["modelx"], "default": ["modely"]},
         ),
+        (
+            ["model1", "model2", "model3"],
+            ["model1", "default"],
+            ["model1"],
+            {"lma": [], "default": []},
+        ),
     ],
 )
 async def test_get_filtered_models_mapping(
