@@ -51,7 +51,7 @@ controllers:
 
 ## Default config
 
-The key inside *default* will provide the default value to `controller` if the value is not exists.
+The key inside *default* will provide the default value to `{key}s` if the value is not exists.
 
 ## Generate configuration
 
